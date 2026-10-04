@@ -1,0 +1,38 @@
+package com.example.rms.change.infrastructure;
+import com.example.rms.change.application.*;
+import com.example.rms.change.application.port.ChangeStore;
+import com.example.rms.change.infrastructure.persistence.*;
+import com.example.rms.shared.application.PageData;
+import com.example.rms.shared.domain.*;
+import jakarta.persistence.*;
+import java.time.Instant;
+import org.springframework.stereotype.Repository;
+@Repository
+public class JpaChangeStore implements ChangeStore,com.example.rms.shared.application.FailureTargetContext {
+    private final EntityManager em;
+    public JpaChangeStore(EntityManager em) { this.em=em; }
+    @Override public boolean supports(String type) { return type.equals("CHANGE_REQUEST") || type.equals("CHANGE_REVIEW"); }
+    @Override public Long requirementContext(String type,long id) { String query=type.equals("CHANGE_REVIEW")?"select r.requirementId from ChangeRequestReviewEntity r where r.changeReviewId=:id":"select c.requirementId from ChangeRequestEntity c where c.changeRequestId=:id";var rows=em.createQuery(query,Long.class).setParameter("id",id).getResultList();return rows.isEmpty()?null:rows.getFirst(); }
+    @Override public long requirementId(long id) { var ids=em.createQuery("select c.requirementId from ChangeRequestEntity c where c.changeRequestId=:id",Long.class).setParameter("id",id).getResultList();if(ids.isEmpty())throw new RmsException(ErrorCode.NOT_FOUND);return ids.getFirst(); }
+    @Override public long reviewChangeId(long id) { var ids=em.createQuery("select r.changeRequestId from ChangeRequestReviewEntity r where r.changeReviewId=:id",Long.class).setParameter("id",id).getResultList();if(ids.isEmpty())throw new RmsException(ErrorCode.NOT_FOUND);return ids.getFirst(); }
+    private ChangeRequestEntity find(long id) { var c=em.find(ChangeRequestEntity.class,id);if(c==null)throw new RmsException(ErrorCode.NOT_FOUND);return c; }
+    @Override public ChangeData read(long id) { return data(find(id)); }
+    @Override public ChangeData lock(long id) { var c=em.find(ChangeRequestEntity.class,id,LockModeType.PESSIMISTIC_WRITE);if(c==null)throw new RmsException(ErrorCode.NOT_FOUND);em.refresh(c,LockModeType.PESSIMISTIC_WRITE);return data(c); }
+    @Override public boolean active(long id) { return em.createQuery("select count(c) from ChangeRequestEntity c where c.requirementId=:id and c.status in ('DRAFT','UNDER_REVIEW','APPROVED')",Long.class).setParameter("id",id).getSingleResult()!=0; }
+    @Override public ChangeData create(long id,long base,String title,String reason,ContentSnapshot content,long actorId,Instant now) { var c=ChangeRequestEntity.draft(id,base,title,reason,content,actorId,now);em.persist(c);em.flush();return data(c); }
+    @Override public ChangeData edit(long id,String title,String reason,ContentSnapshot content,Instant now) { var c=find(id);c.edit(title,reason,content,now);em.flush();return data(c); }
+    @Override public ChangeData submit(long id,Instant now) { var c=find(id);c.submit(now);em.flush();return data(c); }
+    @Override public ChangeData cancel(long id,Instant now) { var c=find(id);c.cancel(now);em.flush();return data(c); }
+    @Override public ChangeData afterDecision(long id,String decision,Instant now) { var c=find(id);c.afterDecision(decision,now);em.flush();return data(c); }
+    @Override public ChangeData applied(long id,long actorId,Instant now) { var c=find(id);c.applied(actorId,now);em.flush();return data(c); }
+    @Override public boolean pending(long id) { return em.createQuery("select count(r) from ChangeRequestReviewEntity r where r.changeRequestId=:id and r.reviewStatus='PENDING'",Long.class).setParameter("id",id).getSingleResult()!=0; }
+    @Override public int nextRound(long id) { Integer max=em.createQuery("select max(r.roundNo) from ChangeRequestReviewEntity r where r.changeRequestId=:id",Integer.class).setParameter("id",id).getSingleResult();if(max!=null && max==Integer.MAX_VALUE)throw new RmsException(ErrorCode.STATE_CONFLICT);return max==null?1:max+1; }
+    @Override public ChangeReviewData createReview(ChangeData c,int round,long actorId,Instant now) { var r=ChangeRequestReviewEntity.pending(c.requirementId(),c.changeRequestId(),round,c.baseVersionId(),c.requestTitle(),c.reason(),c.proposed(),actorId,now);em.persist(r);em.flush();return data(r); }
+    @Override public ChangeReviewData lockReview(long id) { var r=em.find(ChangeRequestReviewEntity.class,id,LockModeType.PESSIMISTIC_WRITE);if(r==null)throw new RmsException(ErrorCode.NOT_FOUND);em.refresh(r,LockModeType.PESSIMISTIC_WRITE);return data(r); }
+    @Override public ChangeReviewData latestReview(long id) { var rows=em.createQuery("select r from ChangeRequestReviewEntity r where r.changeRequestId=:id order by r.roundNo desc",ChangeRequestReviewEntity.class).setParameter("id",id).setMaxResults(1).getResultList();if(rows.isEmpty())throw new RmsException(ErrorCode.STATE_CONFLICT);return data(rows.getFirst()); }
+    @Override public ChangeReviewData completeReview(long id,String decision,String comment,long actorId,Instant now) { var r=em.find(ChangeRequestReviewEntity.class,id);r.complete(decision,comment,actorId,now);em.flush();return data(r); }
+    @Override public PageData<ChangeData> list(long id,String status,Paging p) { String filter=" where c.requirementId=:id"+(status==null?"":" and c.status=:state");var rows=em.createQuery("select c from ChangeRequestEntity c"+filter+" order by c.changeRequestId",ChangeRequestEntity.class).setParameter("id",id);var count=em.createQuery("select count(c) from ChangeRequestEntity c"+filter,Long.class).setParameter("id",id);if(status!=null){rows.setParameter("state",status);count.setParameter("state",status);}return new PageData<>(rows.setFirstResult(p.offset()).setMaxResults(p.size()).getResultList().stream().map(JpaChangeStore::data).toList(),p.page(),p.size(),count.getSingleResult()); }
+    @Override public PageData<ChangeReviewData> reviews(Long id,Paging p) { String filter=id==null?" where r.reviewStatus='PENDING'":" where r.changeRequestId=:id";var rows=em.createQuery("select r from ChangeRequestReviewEntity r"+filter+" order by r.changeRequestId,r.roundNo",ChangeRequestReviewEntity.class);var count=em.createQuery("select count(r) from ChangeRequestReviewEntity r"+filter,Long.class);if(id!=null){rows.setParameter("id",id);count.setParameter("id",id);}return new PageData<>(rows.setFirstResult(p.offset()).setMaxResults(p.size()).getResultList().stream().map(JpaChangeStore::data).toList(),p.page(),p.size(),count.getSingleResult()); }
+    private static ChangeData data(ChangeRequestEntity c) { return new ChangeData(c.getChangeRequestId(),c.getRequirementId(),c.getBaseVersionId(),c.getRequestTitle(),c.getReason(),new ContentSnapshot(c.getProposedTitle(),c.getProposedDescription(),c.getProposedLevel(),c.getProposedKind(),c.getProposedPriority(),c.getProposedSource(),c.getProposedRationale(),c.getProposedAcceptanceCriteria()),c.getStatus(),c.getCreatedBy(),c.getCreatedAt(),c.getUpdatedAt(),c.getAppliedBy(),c.getAppliedAt(),c.getLockVersion()); }
+    private static ChangeReviewData data(ChangeRequestReviewEntity r) { return new ChangeReviewData(r.getChangeReviewId(),r.getRequirementId(),r.getChangeRequestId(),r.getRoundNo(),r.getSnapshotBaseVersionId(),r.getSnapshotRequestTitle(),r.getSnapshotReason(),new ContentSnapshot(r.getSnapshotProposedTitle(),r.getSnapshotProposedDescription(),r.getSnapshotProposedLevel(),r.getSnapshotProposedKind(),r.getSnapshotProposedPriority(),r.getSnapshotProposedSource(),r.getSnapshotProposedRationale(),r.getSnapshotProposedAcceptanceCriteria()),r.getSubmittedBy(),r.getSubmittedAt(),r.getReviewStatus(),r.getReviewerId(),r.getDecision(),r.getComment(),r.getDecidedAt()); }
+}

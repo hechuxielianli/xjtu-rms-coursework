@@ -1,0 +1,10 @@
+package com.example.rms.shared.domain;
+public enum ErrorCode {
+    INVALID_INPUT(400), INCOMPLETE_CONTENT(400), UNAUTHENTICATED(401), INVALID_CREDENTIALS(401),
+    FORBIDDEN(403), ACCOUNT_DISABLED(403), SELF_REVIEW(403), NOT_AUTHOR(403), NOT_FOUND(404),
+    LOCK_VERSION_CONFLICT(409), STATE_CONFLICT(409), BASE_VERSION_STALE(409), DUPLICATE(409),
+    ACTIVE_CHANGE_EXISTS(409), ACTIVE_REVIEW_EXISTS(409), DEPENDENCY_CYCLE(409), GRAPH_BUSY(409), INTERNAL_ERROR(500);
+    private final int status;
+    ErrorCode(int status) { this.status=status; }
+    public int status() { return status; }
+}

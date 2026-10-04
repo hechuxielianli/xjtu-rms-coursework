@@ -1,0 +1,6197 @@
+openapi: 3.1.0
+info:
+  title: RMS Implementation Architecture Baseline 2.0 — OpenAPI draft
+  version: 2.0.0-draft
+  description: Design only; NOT IMPLEMENTED. 业务来源唯一冻结Baseline1.3。服务器根/api/v1。全部保护操作检查session、启用状态、实际角色并集；自我评审等限制独立执行。请求只白名单，历史不可变，无generic
+    status API。SQL BIGINT IDs/lockVersion采用十进制字符串。两个/auth技术GET为实现派生，不新增FR。数据库generated活动键不公开。密码原值与1..72 UTF-8 bytes技术政策已冻结；非admin assignee目录待决。
+servers:
+- url: /api/v1
+security:
+- cookieSession: []
+x-baseline: RMS Design Baseline 1.3
+x-status: DRAFT_NOT_IMPLEMENTED
+paths:
+  /auth/login:
+    post:
+      operationId: login
+      tags:
+      - auth
+      summary: 用户名或邮箱登录；禁用403，未知或错误凭证401，成功轮换会话ID
+      description: 用户名或邮箱登录；禁用403，未知或错误凭证401，成功轮换会话ID
+      x-module: auth
+      x-fr:
+      - FR-AUTH-001
+      - FR-AUTH-003
+      x-br:
+      - BR-AUTH-001
+      - BR-AUTH-002
+      - BR-AUTH-003
+      - BR-AUTH-004
+      x-uc:
+      - UC-01
+      x-ac:
+      - AC-01
+      x-required-roles: []
+      x-transaction: SECURITY_SESSION_LIFECYCLE
+      responses:
+        '200':
+          description: 成功；具体业务含义见操作说明
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionResponse'
+        '400':
+          description: 字段/完整性错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '401':
+          description: 未认证/凭证错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '403':
+          description: 权限/启用状态/自我评审/CSRF拒绝
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: 目标不存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '409':
+          description: 修订/状态/唯一/基准/图锁冲突
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '500':
+          description: 内部错误；业务写全回滚
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      security: []
+      parameters:
+      - $ref: '#/components/parameters/CsrfHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+  /auth/logout:
+    post:
+      operationId: logout
+      tags:
+      - auth
+      summary: 使当前已认证会话失效
+      description: 使当前已认证会话失效。仅启用账号；服务端重新检查角色并集及独立业务限制。
+      x-module: auth
+      x-fr:
+      - FR-AUTH-002
+      x-br:
+      - BR-AUTH-001
+      - BR-AUTH-002
+      - BR-AUTH-003
+      - BR-AUTH-004
+      x-uc:
+      - UC-01
+      x-ac:
+      - AC-01
+      x-required-roles: &id001
+      - ADMIN
+      - REQUIREMENT_ENGINEER
+      - REVIEWER
+      - PROJECT_MEMBER
+      - VIEWER
+      x-transaction: SECURITY_SESSION_LIFECYCLE
+      responses:
+        '204':
+          description: 成功；具体业务含义见操作说明
+        '400':
+          description: 字段/完整性错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '401':
+          description: 未认证/凭证错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '403':
+          description: 权限/启用状态/自我评审/CSRF拒绝
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: 目标不存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '409':
+          description: 修订/状态/唯一/基准/图锁冲突
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '500':
+          description: 内部错误；业务写全回滚
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      parameters:
+      - $ref: '#/components/parameters/CsrfHeader'
+  /auth/csrf:
+    get:
+      operationId: getCsrf
+      tags:
+      - auth
+      summary: 实现派生：提供CSRF令牌，登录和退出后重新获取；不是bootstrap业务接口
+      description: 实现派生：提供CSRF令牌，登录和退出后重新获取；不是bootstrap业务接口
+      x-module: auth
+      x-fr:
+      - FR-AUTH-001
+      - FR-AUTH-003
+      x-br:
+      - BR-AUTH-001
+      - BR-AUTH-002
+      - BR-AUTH-003
+      - BR-AUTH-004
+      x-uc:
+      - UC-01
+      x-ac:
+      - AC-01
+      x-required-roles: []
+      x-transaction: SECURITY_SESSION_READ
+      responses:
+        '200':
+          description: 成功；具体业务含义见操作说明
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CsrfResponse'
+        '400':
+          description: 字段/完整性错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '401':
+          description: 未认证/凭证错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '403':
+          description: 权限/启用状态/自我评审/CSRF拒绝
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: 目标不存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '409':
+          description: 修订/状态/唯一/基准/图锁冲突
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '500':
+          description: 内部错误；业务写全回滚
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      security: []
+  /auth/session:
+    get:
+      operationId: getSession
+      tags:
+      - auth
+      summary: 实现派生：读取当前可信会话身份和实际角色
+      description: 实现派生：读取当前可信会话身份和实际角色。仅启用账号；服务端重新检查角色并集及独立业务限制。
+      x-module: auth
+      x-fr:
+      - FR-AUTH-003
+      - FR-USER-006
+      x-br:
+      - BR-AUTH-001
+      - BR-AUTH-002
+      - BR-AUTH-003
+      - BR-AUTH-004
+      - BR-CR-019
+      - BR-REV-004
+      x-uc:
+      - UC-01
+      - UC-02
+      x-ac:
+      - AC-01
+      x-required-roles: *id001
+      x-transaction: SECURITY_SESSION_READ
+      responses:
+        '200':
+          description: 成功；具体业务含义见操作说明
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SessionResponse'
+        '400':
+          description: 字段/完整性错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '401':
+          description: 未认证/凭证错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '403':
+          description: 权限/启用状态/自我评审/CSRF拒绝
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: 目标不存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '409':
+          description: 修订/状态/唯一/基准/图锁冲突
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '500':
+          description: 内部错误；业务写全回滚
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+  /users:
+    get:
+      operationId: listUsers
+      tags:
+      - user
+      summary: 管理员分页读取安全资料；不得被非管理员作为用户目录调用
+      description: 管理员分页读取安全资料；不得被非管理员作为用户目录调用。仅启用账号；服务端重新检查角色并集及独立业务限制。
+      x-module: user
+      x-fr:
+      - FR-USER-004
+      x-br:
+      - BR-AUTH-001
+      - BR-AUTH-002
+      - BR-AUTH-003
+      - BR-AUTH-004
+      - BR-USER-003
+      x-uc:
+      - UC-02
+      x-ac:
+      - AC-01
+      x-required-roles: &id002
+      - ADMIN
+      x-transaction: READ_ONLY
+      responses:
+        '200':
+          description: 成功；具体业务含义见操作说明
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminUserResponsePage'
+        '400':
+          description: 字段/完整性错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '401':
+          description: 未认证/凭证错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '403':
+          description: 权限/启用状态/自我评审/CSRF拒绝
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: 目标不存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '409':
+          description: 修订/状态/唯一/基准/图锁冲突
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '500':
+          description: 内部错误；业务写全回滚
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      parameters:
+      - $ref: '#/components/parameters/Page'
+      - $ref: '#/components/parameters/Size'
+    post:
+      operationId: createUser
+      tags:
+      - user
+      summary: 管理员创建用户和至少一预定义角色，服务端BCrypt，不返回密码
+      description: 管理员创建用户和至少一预定义角色，服务端BCrypt，不返回密码。仅启用账号；服务端重新检查角色并集及独立业务限制。
+      x-module: user
+      x-fr:
+      - FR-AUDIT-001
+      - FR-USER-001
+      - FR-USER-005
+      x-br:
+      - BR-AUDIT-001
+      - BR-AUDIT-002
+      - BR-AUDIT-003
+      - BR-AUDIT-004
+      - BR-AUDIT-006
+      - BR-AUTH-001
+      - BR-AUTH-002
+      - BR-AUTH-003
+      - BR-AUTH-004
+      - BR-USER-001
+      - BR-USER-002
+      - BR-USER-003
+      - BR-USER-004
+      - BR-USER-005
+      x-uc:
+      - UC-02
+      - UC-S1
+      x-ac:
+      - AC-01
+      - AC-10
+      x-required-roles: *id002
+      x-transaction: APPLICATION_REQUIRED
+      responses:
+        '201':
+          description: 成功；具体业务含义见操作说明
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminUserResponse'
+        '400':
+          description: 字段/完整性错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '401':
+          description: 未认证/凭证错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '403':
+          description: 权限/启用状态/自我评审/CSRF拒绝
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: 目标不存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '409':
+          description: 修订/状态/唯一/基准/图锁冲突
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '500':
+          description: 内部错误；业务写全回滚
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      parameters:
+      - $ref: '#/components/parameters/CsrfHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateUserRequest'
+  /users/{id}:
+    patch:
+      operationId: editUser
+      tags:
+      - user
+      summary: 更新用户安全基本资料，保留标识和历史，不能更新密码
+      description: 更新用户安全基本资料，保留标识和历史，不能更新密码。仅启用账号；服务端重新检查角色并集及独立业务限制。
+      x-module: user
+      x-fr:
+      - FR-AUDIT-001
+      - FR-USER-002
+      x-br:
+      - BR-AUDIT-001
+      - BR-AUDIT-002
+      - BR-AUDIT-003
+      - BR-AUDIT-004
+      - BR-AUDIT-006
+      - BR-AUTH-001
+      - BR-AUTH-002
+      - BR-AUTH-003
+      - BR-AUTH-004
+      - BR-USER-001
+      - BR-USER-003
+      x-uc:
+      - UC-02
+      - UC-S1
+      x-ac:
+      - AC-01
+      - AC-10
+      x-required-roles: *id002
+      x-transaction: APPLICATION_REQUIRED
+      responses:
+        '200':
+          description: 成功；具体业务含义见操作说明
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminUserResponse'
+        '400':
+          description: 字段/完整性错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '401':
+          description: 未认证/凭证错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '403':
+          description: 权限/启用状态/自我评审/CSRF拒绝
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: 目标不存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '409':
+          description: 修订/状态/唯一/基准/图锁冲突
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '500':
+          description: 内部错误；业务写全回滚
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/Id'
+      - $ref: '#/components/parameters/CsrfHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EditUserRequest'
+  /users/{id}/roles:
+    put:
+      operationId: setUserRoles
+      tags:
+      - user
+      summary: 替换预定义角色集合，启用用户不能无角色，grantedBy来自当前ADMIN
+      description: 替换预定义角色集合，启用用户不能无角色，grantedBy来自当前ADMIN。仅启用账号；服务端重新检查角色并集及独立业务限制。
+      x-module: user
+      x-fr:
+      - FR-AUDIT-001
+      - FR-USER-005
+      - FR-USER-006
+      x-br:
+      - BR-AUDIT-001
+      - BR-AUDIT-002
+      - BR-AUDIT-003
+      - BR-AUDIT-004
+      - BR-AUDIT-006
+      - BR-AUTH-001
+      - BR-AUTH-002
+      - BR-AUTH-003
+      - BR-AUTH-004
+      - BR-CR-019
+      - BR-REV-004
+      - BR-USER-002
+      - BR-USER-003
+      - BR-USER-004
+      - BR-USER-005
+      x-uc:
+      - UC-02
+      - UC-S1
+      x-ac:
+      - AC-01
+      - AC-10
+      x-required-roles: *id002
+      x-transaction: APPLICATION_REQUIRED
+      responses:
+        '200':
+          description: 成功；具体业务含义见操作说明
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminUserResponse'
+        '400':
+          description: 字段/完整性错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '401':
+          description: 未认证/凭证错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '403':
+          description: 权限/启用状态/自我评审/CSRF拒绝
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: 目标不存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '409':
+          description: 修订/状态/唯一/基准/图锁冲突
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '500':
+          description: 内部错误；业务写全回滚
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/Id'
+      - $ref: '#/components/parameters/CsrfHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SetRolesRequest'
+  /users/{id}/enable:
+    post:
+      operationId: enableUser
+      tags:
+      - user
+      summary: 管理员enable账号；每次保护操作检查实际启用状态
+      description: 管理员enable账号；每次保护操作检查实际启用状态。仅启用账号；服务端重新检查角色并集及独立业务限制。
+      x-module: user
+      x-fr:
+      - FR-AUDIT-001
+      - FR-USER-003
+      x-br:
+      - BR-AUDIT-001
+      - BR-AUDIT-002
+      - BR-AUDIT-003
+      - BR-AUDIT-004
+      - BR-AUDIT-006
+      - BR-AUTH-001
+      - BR-AUTH-002
+      - BR-AUTH-003
+      - BR-AUTH-004
+      - BR-USER-003
+      x-uc:
+      - UC-02
+      - UC-S1
+      x-ac:
+      - AC-01
+      - AC-10
+      x-required-roles: *id002
+      x-transaction: APPLICATION_REQUIRED
+      responses:
+        '200':
+          description: 成功；具体业务含义见操作说明
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminUserResponse'
+        '400':
+          description: 字段/完整性错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '401':
+          description: 未认证/凭证错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '403':
+          description: 权限/启用状态/自我评审/CSRF拒绝
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: 目标不存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '409':
+          description: 修订/状态/唯一/基准/图锁冲突
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '500':
+          description: 内部错误；业务写全回滚
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/Id'
+      - $ref: '#/components/parameters/CsrfHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LockCommand'
+  /users/{id}/disable:
+    post:
+      operationId: disableUser
+      tags:
+      - user
+      summary: 管理员disable账号；每次保护操作检查实际启用状态
+      description: 管理员disable账号；每次保护操作检查实际启用状态。仅启用账号；服务端重新检查角色并集及独立业务限制。
+      x-module: user
+      x-fr:
+      - FR-AUDIT-001
+      - FR-USER-003
+      x-br:
+      - BR-AUDIT-001
+      - BR-AUDIT-002
+      - BR-AUDIT-003
+      - BR-AUDIT-004
+      - BR-AUDIT-006
+      - BR-AUTH-001
+      - BR-AUTH-002
+      - BR-AUTH-003
+      - BR-AUTH-004
+      - BR-USER-003
+      x-uc:
+      - UC-02
+      - UC-S1
+      x-ac:
+      - AC-01
+      - AC-10
+      x-required-roles: *id002
+      x-transaction: APPLICATION_REQUIRED
+      responses:
+        '200':
+          description: 成功；具体业务含义见操作说明
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminUserResponse'
+        '400':
+          description: 字段/完整性错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '401':
+          description: 未认证/凭证错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '403':
+          description: 权限/启用状态/自我评审/CSRF拒绝
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: 目标不存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '409':
+          description: 修订/状态/唯一/基准/图锁冲突
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '500':
+          description: 内部错误；业务写全回滚
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/Id'
+      - $ref: '#/components/parameters/CsrfHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LockCommand'
+  /requirements:
+    get:
+      operationId: listRequirements
+      tags:
+      - requirement
+      summary: 分页组合查询，默认排除逻辑撤销需求，空items正常
+      description: 分页组合查询，默认排除逻辑撤销需求，空items正常。仅启用账号；服务端重新检查角色并集及独立业务限制。
+      x-module: requirement
+      x-fr:
+      - FR-SEARCH-001
+      - FR-SEARCH-002
+      - FR-SEARCH-003
+      - FR-SEARCH-004
+      - FR-SEARCH-005
+      - FR-SEARCH-006
+      x-br:
+      - BR-AUTH-001
+      - BR-AUTH-002
+      - BR-AUTH-003
+      - BR-AUTH-004
+      - BR-LIFE-001
+      - BR-REQ-002
+      - BR-REQ-008
+      - BR-REQ-012
+      x-uc:
+      - UC-06
+      x-ac:
+      - AC-09
+      x-required-roles: *id001
+      x-transaction: READ_ONLY
+      responses:
+        '200':
+          description: 成功；具体业务含义见操作说明
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequirementResponsePage'
+        '400':
+          description: 字段/完整性错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '401':
+          description: 未认证/凭证错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '403':
+          description: 权限/启用状态/自我评审/CSRF拒绝
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: 目标不存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '409':
+          description: 修订/状态/唯一/基准/图锁冲突
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '500':
+          description: 内部错误；业务写全回滚
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      parameters:
+      - $ref: '#/components/parameters/Page'
+      - $ref: '#/components/parameters/Size'
+      - name: keyword
+        in: query
+        required: false
+        schema:
+          type: string
+        description: 编号/标题/描述关键词
+      - name: status
+        in: query
+        required: false
+        schema:
+          $ref: '#/components/schemas/RequirementStatus'
+        description: status
+      - name: kind
+        in: query
+        required: false
+        schema:
+          $ref: '#/components/schemas/RequirementKind'
+        description: kind
+      - name: level
+        in: query
+        required: false
+        schema:
+          $ref: '#/components/schemas/RequirementLevel'
+        description: level
+      - name: priority
+        in: query
+        required: false
+        schema:
+          $ref: '#/components/schemas/Priority'
+        description: priority
+      - name: tag
+        in: query
+        required: false
+        schema:
+          $ref: '#/components/schemas/Id'
+        description: 标签ID；多个筛选使用AND，不改变业务语义
+    post:
+      operationId: createRequirement
+      tags:
+      - requirement
+      summary: 创建DRAFT，服务端生成稳定编号和creator
+      description: 创建DRAFT，服务端生成稳定编号和creator。仅启用账号；服务端重新检查角色并集及独立业务限制。
+      x-module: requirement
+      x-fr:
+      - FR-AUDIT-001
+      - FR-REQ-001
+      - FR-REQ-005
+      - FR-REQ-006
+      x-br:
+      - BR-AUDIT-001
+      - BR-AUDIT-002
+      - BR-AUDIT-003
+      - BR-AUDIT-004
+      - BR-AUDIT-006
+      - BR-AUTH-001
+      - BR-AUTH-002
+      - BR-AUTH-003
+      - BR-AUTH-004
+      - BR-REQ-001
+      - BR-REQ-002
+      - BR-REQ-003
+      - BR-REQ-004
+      - BR-REQ-006
+      - BR-REQ-007
+      - BR-REQ-009
+      - BR-REQ-013
+      x-uc:
+      - UC-03
+      - UC-S1
+      x-ac:
+      - AC-02
+      - AC-10
+      x-required-roles: &id003
+      - REQUIREMENT_ENGINEER
+      x-transaction: APPLICATION_REQUIRED
+      responses:
+        '201':
+          description: 成功；具体业务含义见操作说明
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequirementResponse'
+        '400':
+          description: 字段/完整性错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '401':
+          description: 未认证/凭证错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '403':
+          description: 权限/启用状态/自我评审/CSRF拒绝
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: 目标不存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '409':
+          description: 修订/状态/唯一/基准/图锁冲突
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '500':
+          description: 内部错误；业务写全回滚
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      parameters:
+      - $ref: '#/components/parameters/CsrfHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateRequirementRequest'
+  /requirements/{id}:
+    get:
+      operationId: getRequirement
+      tags:
+      - requirement
+      summary: 需求详情及只读历史入口，撤销需求保留可访问只读历史
+      description: 需求详情及只读历史入口，撤销需求保留可访问只读历史。仅启用账号；服务端重新检查角色并集及独立业务限制。
+      x-module: requirement
+      x-fr:
+      - FR-REQ-002
+      - FR-SEARCH-007
+      - FR-VER-005
+      x-br:
+      - BR-AUDIT-005
+      - BR-AUTH-001
+      - BR-AUTH-002
+      - BR-AUTH-003
+      - BR-AUTH-004
+      - BR-REQ-012
+      - BR-VER-001
+      - BR-VER-005
+      - BR-VER-008
+      - BR-VER-009
+      - BR-VER-011
+      x-uc:
+      - UC-03
+      - UC-06
+      - UC-08
+      x-ac:
+      - AC-02
+      - AC-05
+      - AC-09
+      x-required-roles: *id001
+      x-transaction: READ_ONLY
+      responses:
+        '200':
+          description: 成功；具体业务含义见操作说明
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequirementResponse'
+        '400':
+          description: 字段/完整性错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '401':
+          description: 未认证/凭证错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '403':
+          description: 权限/启用状态/自我评审/CSRF拒绝
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: 目标不存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '409':
+          description: 修订/状态/唯一/基准/图锁冲突
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '500':
+          description: 内部错误；业务写全回滚
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/Id'
+  /requirements/{id}/content:
+    patch:
+      operationId: editRequirementContent
+      tags:
+      - requirement
+      summary: 只编辑DRAFT八项内容，形成基线后不能直接修改
+      description: 只编辑DRAFT八项内容，形成基线后不能直接修改。仅启用账号；服务端重新检查角色并集及独立业务限制。
+      x-module: requirement
+      x-fr:
+      - FR-AUDIT-001
+      - FR-REQ-003
+      - FR-REQ-005
+      - FR-REQ-006
+      x-br:
+      - BR-AUDIT-001
+      - BR-AUDIT-002
+      - BR-AUDIT-003
+      - BR-AUDIT-004
+      - BR-AUDIT-006
+      - BR-AUTH-001
+      - BR-AUTH-002
+      - BR-AUTH-003
+      - BR-AUTH-004
+      - BR-REQ-002
+      - BR-REQ-004
+      - BR-REQ-005
+      - BR-REQ-006
+      - BR-REQ-007
+      - BR-REQ-013
+      x-uc:
+      - UC-03
+      - UC-S1
+      x-ac:
+      - AC-02
+      - AC-10
+      x-required-roles: *id003
+      x-transaction: APPLICATION_REQUIRED
+      responses:
+        '200':
+          description: 成功；具体业务含义见操作说明
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequirementResponse'
+        '400':
+          description: 字段/完整性错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '401':
+          description: 未认证/凭证错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '403':
+          description: 权限/启用状态/自我评审/CSRF拒绝
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: 目标不存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '409':
+          description: 修订/状态/唯一/基准/图锁冲突
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '500':
+          description: 内部错误；业务写全回滚
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/Id'
+      - $ref: '#/components/parameters/CsrfHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EditRequirementContentRequest'
+  /requirements/{id}/metadata:
+    patch:
+      operationId: editRequirementMetadata
+      tags:
+      - requirement
+      summary: 独立维护负责人及标签，新负责人须启用，不产生正式版本
+      description: 独立维护负责人及标签，新负责人须启用，不产生正式版本。仅启用账号；服务端重新检查角色并集及独立业务限制。
+      x-module: requirement
+      x-fr:
+      - FR-AUDIT-001
+      - FR-REQ-007
+      - FR-REQ-008
+      x-br:
+      - BR-AUDIT-001
+      - BR-AUDIT-002
+      - BR-AUDIT-003
+      - BR-AUDIT-004
+      - BR-AUDIT-006
+      - BR-AUTH-001
+      - BR-AUTH-002
+      - BR-AUTH-003
+      - BR-AUTH-004
+      - BR-REQ-008
+      x-uc:
+      - UC-03
+      - UC-S1
+      x-ac:
+      - AC-02
+      - AC-10
+      x-required-roles: *id003
+      x-transaction: APPLICATION_REQUIRED
+      responses:
+        '200':
+          description: 成功；具体业务含义见操作说明
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequirementResponse'
+        '400':
+          description: 字段/完整性错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '401':
+          description: 未认证/凭证错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '403':
+          description: 权限/启用状态/自我评审/CSRF拒绝
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: 目标不存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '409':
+          description: 修订/状态/唯一/基准/图锁冲突
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '500':
+          description: 内部错误；业务写全回滚
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/Id'
+      - $ref: '#/components/parameters/CsrfHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EditMetadataRequest'
+  /tags:
+    get:
+      operationId: listTags
+      tags:
+      - requirement
+      summary: 读取可复用标签，名称筛选
+      description: 读取可复用标签，名称筛选。仅启用账号；服务端重新检查角色并集及独立业务限制。
+      x-module: requirement
+      x-fr:
+      - FR-REQ-007
+      - FR-SEARCH-006
+      x-br:
+      - BR-AUDIT-001
+      - BR-AUTH-001
+      - BR-AUTH-002
+      - BR-AUTH-003
+      - BR-AUTH-004
+      - BR-REQ-008
+      - BR-REQ-012
+      x-uc:
+      - UC-03
+      - UC-06
+      x-ac:
+      - AC-02
+      - AC-09
+      x-required-roles: *id001
+      x-transaction: READ_ONLY
+      responses:
+        '200':
+          description: 成功；具体业务含义见操作说明
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TagResponsePage'
+        '400':
+          description: 字段/完整性错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '401':
+          description: 未认证/凭证错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '403':
+          description: 权限/启用状态/自我评审/CSRF拒绝
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: 目标不存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '409':
+          description: 修订/状态/唯一/基准/图锁冲突
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '500':
+          description: 内部错误；业务写全回滚
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      parameters:
+      - $ref: '#/components/parameters/Page'
+      - $ref: '#/components/parameters/Size'
+      - name: name
+        in: query
+        required: false
+        schema:
+          type: string
+          maxLength: 50
+        description: name
+    post:
+      operationId: createTag
+      tags:
+      - requirement
+      summary: 创建规范化唯一标签
+      description: 创建规范化唯一标签。仅启用账号；服务端重新检查角色并集及独立业务限制。
+      x-module: requirement
+      x-fr:
+      - FR-AUDIT-001
+      - FR-REQ-007
+      x-br:
+      - BR-AUDIT-001
+      - BR-AUDIT-002
+      - BR-AUDIT-003
+      - BR-AUDIT-004
+      - BR-AUDIT-006
+      - BR-AUTH-001
+      - BR-AUTH-002
+      - BR-AUTH-003
+      - BR-AUTH-004
+      - BR-REQ-008
+      x-uc:
+      - UC-03
+      - UC-S1
+      x-ac:
+      - AC-02
+      - AC-10
+      x-required-roles: *id003
+      x-transaction: APPLICATION_REQUIRED
+      responses:
+        '201':
+          description: 成功；具体业务含义见操作说明
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TagResponse'
+        '400':
+          description: 字段/完整性错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '401':
+          description: 未认证/凭证错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '403':
+          description: 权限/启用状态/自我评审/CSRF拒绝
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: 目标不存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '409':
+          description: 修订/状态/唯一/基准/图锁冲突
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '500':
+          description: 内部错误；业务写全回滚
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      parameters:
+      - $ref: '#/components/parameters/CsrfHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTagRequest'
+  /tags/{id}:
+    patch:
+      operationId: editTag
+      tags:
+      - requirement
+      summary: 更新标签名称或说明并审计，无Tag修订号字段
+      description: 更新标签名称或说明并审计，无Tag修订号字段。仅启用账号；服务端重新检查角色并集及独立业务限制。
+      x-module: requirement
+      x-fr:
+      - FR-AUDIT-001
+      - FR-REQ-007
+      x-br:
+      - BR-AUDIT-001
+      - BR-AUDIT-002
+      - BR-AUDIT-003
+      - BR-AUDIT-004
+      - BR-AUDIT-006
+      - BR-AUTH-001
+      - BR-AUTH-002
+      - BR-AUTH-003
+      - BR-AUTH-004
+      - BR-REQ-008
+      x-uc:
+      - UC-03
+      - UC-S1
+      x-ac:
+      - AC-02
+      - AC-10
+      x-required-roles: *id003
+      x-transaction: APPLICATION_REQUIRED
+      responses:
+        '200':
+          description: 成功；具体业务含义见操作说明
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TagResponse'
+        '400':
+          description: 字段/完整性错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '401':
+          description: 未认证/凭证错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '403':
+          description: 权限/启用状态/自我评审/CSRF拒绝
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: 目标不存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '409':
+          description: 修订/状态/唯一/基准/图锁冲突
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '500':
+          description: 内部错误；业务写全回滚
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/Id'
+      - $ref: '#/components/parameters/CsrfHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EditTagRequest'
+  /requirements/{id}/withdraw:
+    post:
+      operationId: withdrawRequirement
+      tags:
+      - requirement
+      summary: 图锁内确认从未提交且无有效关联的DRAFT，逻辑撤销
+      description: 图锁内确认从未提交且无有效关联的DRAFT，逻辑撤销。仅启用账号；服务端重新检查角色并集及独立业务限制。
+      x-module: requirement
+      x-fr:
+      - FR-AUDIT-001
+      - FR-REQ-004
+      x-br:
+      - BR-AUDIT-001
+      - BR-AUDIT-002
+      - BR-AUDIT-003
+      - BR-AUDIT-004
+      - BR-AUDIT-006
+      - BR-AUTH-001
+      - BR-AUTH-002
+      - BR-AUTH-003
+      - BR-AUTH-004
+      - BR-REQ-010
+      - BR-REQ-011
+      - BR-REQ-012
+      x-uc:
+      - UC-03
+      - UC-S1
+      x-ac:
+      - AC-10
+      - AC-12
+      x-required-roles: *id003
+      x-transaction: APPLICATION_REQUIRED
+      responses:
+        '200':
+          description: 成功；具体业务含义见操作说明
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequirementResponse'
+        '400':
+          description: 字段/完整性错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '401':
+          description: 未认证/凭证错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '403':
+          description: 权限/启用状态/自我评审/CSRF拒绝
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: 目标不存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '409':
+          description: 修订/状态/唯一/基准/图锁冲突
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '500':
+          description: 内部错误；业务写全回滚
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/Id'
+      - $ref: '#/components/parameters/CsrfHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LockCommand'
+  /requirements/{id}/submit:
+    post:
+      operationId: submitRequirement
+      tags:
+      - review
+      summary: 提交完整需求，同事务创建PENDING完整八项快照及UNDER_REVIEW
+      description: 提交完整需求，同事务创建PENDING完整八项快照及UNDER_REVIEW。仅启用账号；服务端重新检查角色并集及独立业务限制。
+      x-module: review
+      x-fr:
+      - FR-AUDIT-001
+      - FR-AUDIT-002
+      - FR-LIFE-001
+      - FR-LIFE-002
+      - FR-LIFE-003
+      - FR-REV-006
+      x-br:
+      - BR-AUDIT-001
+      - BR-AUDIT-002
+      - BR-AUDIT-003
+      - BR-AUDIT-004
+      - BR-AUDIT-005
+      - BR-AUDIT-006
+      - BR-AUTH-001
+      - BR-AUTH-002
+      - BR-AUTH-003
+      - BR-AUTH-004
+      - BR-LIFE-001
+      - BR-LIFE-002
+      - BR-LIFE-003
+      - BR-LIFE-004
+      - BR-LIFE-009
+      - BR-REQ-013
+      - BR-REV-007
+      - BR-REV-008
+      - BR-REV-010
+      x-uc:
+      - UC-04
+      - UC-05
+      - UC-S1
+      x-ac:
+      - AC-03
+      - AC-04
+      - AC-10
+      x-required-roles: *id003
+      x-transaction: APPLICATION_REQUIRED
+      responses:
+        '201':
+          description: 成功；具体业务含义见操作说明
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequirementReviewResponse'
+        '400':
+          description: 字段/完整性错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '401':
+          description: 未认证/凭证错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '403':
+          description: 权限/启用状态/自我评审/CSRF拒绝
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: 目标不存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '409':
+          description: 修订/状态/唯一/基准/图锁冲突
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '500':
+          description: 内部错误；业务写全回滚
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/Id'
+      - $ref: '#/components/parameters/CsrfHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LockCommand'
+  /requirements/{id}/reopen:
+    post:
+      operationId: reopenRequirement
+      tags:
+      - requirement
+      summary: 仅REJECTED回到DRAFT，保留评审与firstSubmittedAt
+      description: 仅REJECTED回到DRAFT，保留评审与firstSubmittedAt。仅启用账号；服务端重新检查角色并集及独立业务限制。
+      x-module: requirement
+      x-fr:
+      - FR-AUDIT-001
+      - FR-AUDIT-002
+      - FR-LIFE-001
+      - FR-LIFE-003
+      - FR-LIFE-006
+      x-br:
+      - BR-AUDIT-001
+      - BR-AUDIT-002
+      - BR-AUDIT-003
+      - BR-AUDIT-004
+      - BR-AUDIT-006
+      - BR-AUTH-001
+      - BR-AUTH-002
+      - BR-AUTH-003
+      - BR-AUTH-004
+      - BR-LIFE-001
+      - BR-LIFE-002
+      - BR-LIFE-004
+      - BR-LIFE-006
+      - BR-LIFE-009
+      - BR-REQ-011
+      x-uc:
+      - UC-04
+      - UC-S1
+      x-ac:
+      - AC-03
+      - AC-10
+      x-required-roles: *id003
+      x-transaction: APPLICATION_REQUIRED
+      responses:
+        '200':
+          description: 成功；具体业务含义见操作说明
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequirementResponse'
+        '400':
+          description: 字段/完整性错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '401':
+          description: 未认证/凭证错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '403':
+          description: 权限/启用状态/自我评审/CSRF拒绝
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: 目标不存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '409':
+          description: 修订/状态/唯一/基准/图锁冲突
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '500':
+          description: 内部错误；业务写全回滚
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/Id'
+      - $ref: '#/components/parameters/CsrfHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LockCommand'
+  /requirements/{id}/implement:
+    post:
+      operationId: implementRequirement
+      tags:
+      - requirement
+      summary: 仅合法前态并确认当前正式版本的implement，说明写审计
+      description: 仅合法前态并确认当前正式版本的implement，说明写审计。仅启用账号；服务端重新检查角色并集及独立业务限制。
+      x-module: requirement
+      x-fr:
+      - FR-AUDIT-001
+      - FR-AUDIT-002
+      - FR-LIFE-001
+      - FR-LIFE-003
+      - FR-LIFE-004
+      x-br:
+      - BR-AUDIT-001
+      - BR-AUDIT-002
+      - BR-AUDIT-003
+      - BR-AUDIT-004
+      - BR-AUDIT-006
+      - BR-AUTH-001
+      - BR-AUTH-002
+      - BR-AUTH-003
+      - BR-AUTH-004
+      - BR-LIFE-001
+      - BR-LIFE-002
+      - BR-LIFE-004
+      - BR-LIFE-007
+      - BR-LIFE-009
+      x-uc:
+      - UC-04
+      - UC-S1
+      x-ac:
+      - AC-03
+      - AC-10
+      x-required-roles: &id004
+      - PROJECT_MEMBER
+      x-transaction: APPLICATION_REQUIRED
+      responses:
+        '200':
+          description: 成功；具体业务含义见操作说明
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequirementResponse'
+        '400':
+          description: 字段/完整性错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '401':
+          description: 未认证/凭证错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '403':
+          description: 权限/启用状态/自我评审/CSRF拒绝
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: 目标不存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '409':
+          description: 修订/状态/唯一/基准/图锁冲突
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '500':
+          description: 内部错误；业务写全回滚
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/Id'
+      - $ref: '#/components/parameters/CsrfHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VersionConfirmationRequest'
+  /requirements/{id}/verify:
+    post:
+      operationId: verifyRequirement
+      tags:
+      - requirement
+      summary: 仅合法前态并确认当前正式版本的verify，说明写审计
+      description: 仅合法前态并确认当前正式版本的verify，说明写审计。仅启用账号；服务端重新检查角色并集及独立业务限制。
+      x-module: requirement
+      x-fr:
+      - FR-AUDIT-001
+      - FR-AUDIT-002
+      - FR-LIFE-001
+      - FR-LIFE-003
+      - FR-LIFE-005
+      x-br:
+      - BR-AUDIT-001
+      - BR-AUDIT-002
+      - BR-AUDIT-003
+      - BR-AUDIT-004
+      - BR-AUDIT-006
+      - BR-AUTH-001
+      - BR-AUTH-002
+      - BR-AUTH-003
+      - BR-AUTH-004
+      - BR-LIFE-001
+      - BR-LIFE-002
+      - BR-LIFE-004
+      - BR-LIFE-008
+      - BR-LIFE-009
+      x-uc:
+      - UC-04
+      - UC-S1
+      x-ac:
+      - AC-03
+      - AC-10
+      x-required-roles: *id004
+      x-transaction: APPLICATION_REQUIRED
+      responses:
+        '200':
+          description: 成功；具体业务含义见操作说明
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequirementResponse'
+        '400':
+          description: 字段/完整性错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '401':
+          description: 未认证/凭证错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '403':
+          description: 权限/启用状态/自我评审/CSRF拒绝
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: 目标不存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '409':
+          description: 修订/状态/唯一/基准/图锁冲突
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '500':
+          description: 内部错误；业务写全回滚
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/Id'
+      - $ref: '#/components/parameters/CsrfHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VersionConfirmationRequest'
+  /requirements/{id}/reviews:
+    get:
+      operationId: listRequirementReviews
+      tags:
+      - review
+      summary: 需求评审完整不可变快照与各轮决策，历史只读
+      description: 需求评审完整不可变快照与各轮决策，历史只读。仅启用账号；服务端重新检查角色并集及独立业务限制。
+      x-module: review
+      x-fr:
+      - FR-REV-006
+      - FR-AUDIT-004
+      x-br:
+      - BR-AUDIT-002
+      - BR-AUDIT-005
+      - BR-AUTH-001
+      - BR-AUTH-002
+      - BR-AUTH-003
+      - BR-AUTH-004
+      - BR-REV-007
+      - BR-REV-008
+      - BR-REV-010
+      x-uc:
+      - UC-05
+      - UC-08
+      x-ac:
+      - AC-04
+      - AC-10
+      x-required-roles: *id001
+      x-transaction: READ_ONLY
+      responses:
+        '200':
+          description: 成功；具体业务含义见操作说明
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequirementReviewResponsePage'
+        '400':
+          description: 字段/完整性错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '401':
+          description: 未认证/凭证错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '403':
+          description: 权限/启用状态/自我评审/CSRF拒绝
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: 目标不存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '409':
+          description: 修订/状态/唯一/基准/图锁冲突
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '500':
+          description: 内部错误；业务写全回滚
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/Id'
+      - $ref: '#/components/parameters/Page'
+      - $ref: '#/components/parameters/Size'
+  /reviews/pending:
+    get:
+      operationId: listPendingRequirementReviews
+      tags:
+      - review
+      summary: 待处理需求与PENDING快照；自创建轮次不可决策
+      description: 待处理需求与PENDING快照；自创建轮次不可决策。仅启用账号；服务端重新检查角色并集及独立业务限制。
+      x-module: review
+      x-fr:
+      - FR-REV-001
+      x-br:
+      - BR-AUTH-001
+      - BR-AUTH-002
+      - BR-AUTH-003
+      - BR-AUTH-004
+      - BR-REV-001
+      - BR-REV-002
+      - BR-REV-009
+      x-uc:
+      - UC-05
+      x-ac:
+      - AC-04
+      x-required-roles: &id005
+      - REVIEWER
+      x-transaction: READ_ONLY
+      responses:
+        '200':
+          description: 成功；具体业务含义见操作说明
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequirementReviewResponsePage'
+        '400':
+          description: 字段/完整性错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '401':
+          description: 未认证/凭证错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '403':
+          description: 权限/启用状态/自我评审/CSRF拒绝
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: 目标不存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '409':
+          description: 修订/状态/唯一/基准/图锁冲突
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '500':
+          description: 内部错误；业务写全回滚
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      parameters:
+      - $ref: '#/components/parameters/Page'
+      - $ref: '#/components/parameters/Size'
+  /requirement-reviews/{id}/decision:
+    post:
+      operationId: decideRequirementReview
+      tags:
+      - review
+      summary: 非creator评审者一次决策；APPROVE原子创建V1，拒绝/退回必填意见
+      description: 非creator评审者一次决策；APPROVE原子创建V1，拒绝/退回必填意见。仅启用账号；服务端重新检查角色并集及独立业务限制。
+      x-module: review
+      x-fr:
+      - FR-AUDIT-001
+      - FR-AUDIT-002
+      - FR-LIFE-001
+      - FR-LIFE-003
+      - FR-REV-002
+      - FR-REV-003
+      - FR-REV-004
+      - FR-REV-005
+      - FR-VER-001
+      x-br:
+      - BR-AUDIT-001
+      - BR-AUDIT-002
+      - BR-AUDIT-003
+      - BR-AUDIT-004
+      - BR-AUDIT-006
+      - BR-AUTH-001
+      - BR-AUTH-002
+      - BR-AUTH-003
+      - BR-AUTH-004
+      - BR-LIFE-001
+      - BR-LIFE-002
+      - BR-LIFE-004
+      - BR-LIFE-005
+      - BR-LIFE-009
+      - BR-REV-003
+      - BR-REV-004
+      - BR-REV-005
+      - BR-REV-006
+      - BR-VER-001
+      - BR-VER-002
+      - BR-VER-003
+      - BR-VER-004
+      - BR-VER-005
+      - BR-VER-006
+      - BR-VER-007
+      - BR-VER-010
+      x-uc:
+      - UC-04
+      - UC-05
+      - UC-12
+      - UC-S1
+      x-ac:
+      - AC-03
+      - AC-04
+      - AC-05
+      - AC-10
+      x-required-roles: *id005
+      x-transaction: APPLICATION_REQUIRED
+      responses:
+        '200':
+          description: 成功；具体业务含义见操作说明
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequirementDecisionResponse'
+        '400':
+          description: 字段/完整性错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '401':
+          description: 未认证/凭证错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '403':
+          description: 权限/启用状态/自我评审/CSRF拒绝
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: 目标不存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '409':
+          description: 修订/状态/唯一/基准/图锁冲突
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '500':
+          description: 内部错误；业务写全回滚
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/Id'
+      - $ref: '#/components/parameters/CsrfHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RequirementDecisionRequest'
+  /requirements/{id}/versions:
+    get:
+      operationId: listVersions
+      tags:
+      - version
+      summary: 读取全部正式版本；首次批准前为空集合
+      description: 读取全部正式版本；首次批准前为空集合。仅启用账号；服务端重新检查角色并集及独立业务限制。
+      x-module: version
+      x-fr:
+      - FR-VER-002
+      - FR-VER-004
+      - FR-VER-005
+      x-br:
+      - BR-AUTH-001
+      - BR-AUTH-002
+      - BR-AUTH-003
+      - BR-AUTH-004
+      - BR-VER-001
+      - BR-VER-004
+      - BR-VER-007
+      - BR-VER-008
+      - BR-VER-009
+      - BR-VER-010
+      - BR-VER-011
+      x-uc:
+      - UC-08
+      x-ac:
+      - AC-05
+      x-required-roles: *id001
+      x-transaction: READ_ONLY
+      responses:
+        '200':
+          description: 成功；具体业务含义见操作说明
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequirementVersionResponsePage'
+        '400':
+          description: 字段/完整性错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '401':
+          description: 未认证/凭证错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '403':
+          description: 权限/启用状态/自我评审/CSRF拒绝
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: 目标不存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '409':
+          description: 修订/状态/唯一/基准/图锁冲突
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '500':
+          description: 内部错误；业务写全回滚
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/Id'
+      - $ref: '#/components/parameters/Page'
+      - $ref: '#/components/parameters/Size'
+  /requirements/{id}/versions/{versionId}:
+    get:
+      operationId: getVersion
+      tags:
+      - version
+      summary: 按需求和版本读取完整八项只读历史、产生者、原因和唯一来源
+      description: 按需求和版本读取完整八项只读历史、产生者、原因和唯一来源。仅启用账号；服务端重新检查角色并集及独立业务限制。
+      x-module: version
+      x-fr:
+      - FR-VER-003
+      - FR-VER-004
+      x-br:
+      - BR-AUTH-001
+      - BR-AUTH-002
+      - BR-AUTH-003
+      - BR-AUTH-004
+      - BR-VER-004
+      - BR-VER-005
+      - BR-VER-007
+      - BR-VER-009
+      - BR-VER-010
+      x-uc:
+      - UC-08
+      x-ac:
+      - AC-05
+      x-required-roles: *id001
+      x-transaction: READ_ONLY
+      responses:
+        '200':
+          description: 成功；具体业务含义见操作说明
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequirementVersionResponse'
+        '400':
+          description: 字段/完整性错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '401':
+          description: 未认证/凭证错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '403':
+          description: 权限/启用状态/自我评审/CSRF拒绝
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: 目标不存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '409':
+          description: 修订/状态/唯一/基准/图锁冲突
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '500':
+          description: 内部错误；业务写全回滚
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/Id'
+      - name: versionId
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/Id'
+  /relations:
+    post:
+      operationId: createRelation
+      tags:
+      - relation
+      summary: 图锁和同连接事务中校验两端、归一化对称关系、拒绝重复和DEPENDS_ON环
+      description: 图锁和同连接事务中校验两端、归一化对称关系、拒绝重复和DEPENDS_ON环。仅启用账号；服务端重新检查角色并集及独立业务限制。
+      x-module: relation
+      x-fr:
+      - FR-AUDIT-001
+      - FR-REL-001
+      - FR-REL-003
+      - FR-REL-005
+      x-br:
+      - BR-AUDIT-001
+      - BR-AUDIT-002
+      - BR-AUDIT-003
+      - BR-AUDIT-004
+      - BR-AUDIT-006
+      - BR-AUTH-001
+      - BR-AUTH-002
+      - BR-AUTH-003
+      - BR-AUTH-004
+      - BR-REL-001
+      - BR-REL-002
+      - BR-REL-003
+      - BR-REL-004
+      - BR-REL-005
+      - BR-REL-006
+      - BR-REL-007
+      - BR-REL-010
+      x-uc:
+      - UC-07
+      - UC-S1
+      x-ac:
+      - AC-07
+      - AC-10
+      x-required-roles: *id003
+      x-transaction: APPLICATION_REQUIRED
+      responses:
+        '201':
+          description: 成功；具体业务含义见操作说明
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequirementRelationResponse'
+        '400':
+          description: 字段/完整性错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '401':
+          description: 未认证/凭证错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '403':
+          description: 权限/启用状态/自我评审/CSRF拒绝
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: 目标不存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '409':
+          description: 修订/状态/唯一/基准/图锁冲突
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '500':
+          description: 内部错误；业务写全回滚
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      parameters:
+      - $ref: '#/components/parameters/CsrfHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateRelationRequest'
+  /relations/{id}:
+    delete:
+      operationId: deleteRelation
+      tags:
+      - relation
+      summary: 同图锁解除关系，保存前值审计，不删除两端需求
+      description: 同图锁解除关系，保存前值审计，不删除两端需求。仅启用账号；服务端重新检查角色并集及独立业务限制。
+      x-module: relation
+      x-fr:
+      - FR-AUDIT-001
+      - FR-REL-002
+      - FR-REL-005
+      x-br:
+      - BR-AUDIT-001
+      - BR-AUDIT-002
+      - BR-AUDIT-003
+      - BR-AUDIT-004
+      - BR-AUDIT-006
+      - BR-AUTH-001
+      - BR-AUTH-002
+      - BR-AUTH-003
+      - BR-AUTH-004
+      - BR-REL-001
+      - BR-REL-005
+      - BR-REL-006
+      - BR-REL-007
+      - BR-REL-008
+      - BR-REL-009
+      - BR-REL-010
+      x-uc:
+      - UC-07
+      - UC-S1
+      x-ac:
+      - AC-07
+      - AC-10
+      x-required-roles: *id003
+      x-transaction: APPLICATION_REQUIRED
+      responses:
+        '204':
+          description: 成功；具体业务含义见操作说明
+        '400':
+          description: 字段/完整性错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '401':
+          description: 未认证/凭证错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '403':
+          description: 权限/启用状态/自我评审/CSRF拒绝
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: 目标不存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '409':
+          description: 修订/状态/唯一/基准/图锁冲突
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '500':
+          description: 内部错误；业务写全回滚
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/Id'
+      - name: expectedSourceLockVersion
+        in: query
+        required: true
+        schema:
+          $ref: '#/components/schemas/LockVersion'
+        description: expectedSourceLockVersion
+      - name: expectedTargetLockVersion
+        in: query
+        required: true
+        schema:
+          $ref: '#/components/schemas/LockVersion'
+        description: expectedTargetLockVersion
+      - $ref: '#/components/parameters/CsrfHeader'
+  /requirements/{id}/relations:
+    get:
+      operationId: listRelations
+      tags:
+      - relation
+      summary: 读取当前入向/出向关系与类型
+      description: 读取当前入向/出向关系与类型。仅启用账号；服务端重新检查角色并集及独立业务限制。
+      x-module: relation
+      x-fr:
+      - FR-REL-004
+      x-br:
+      - BR-AUTH-001
+      - BR-AUTH-002
+      - BR-AUTH-003
+      - BR-AUTH-004
+      - BR-REL-002
+      - BR-REL-003
+      - BR-REL-004
+      x-uc:
+      - UC-07
+      x-ac:
+      - AC-07
+      x-required-roles: *id001
+      x-transaction: READ_ONLY
+      responses:
+        '200':
+          description: 成功；具体业务含义见操作说明
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RequirementRelationResponsePage'
+        '400':
+          description: 字段/完整性错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '401':
+          description: 未认证/凭证错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '403':
+          description: 权限/启用状态/自我评审/CSRF拒绝
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: 目标不存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '409':
+          description: 修订/状态/唯一/基准/图锁冲突
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '500':
+          description: 内部错误；业务写全回滚
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/Id'
+      - $ref: '#/components/parameters/Page'
+      - $ref: '#/components/parameters/Size'
+  /requirements/{id}/trace:
+    get:
+      operationId: traceRequirements
+      tags:
+      - relation
+      summary: 有限深度遍历当前图，visited去重，保留方向和类型
+      description: 有限深度遍历当前图，visited去重，保留方向和类型。仅启用账号；服务端重新检查角色并集及独立业务限制。
+      x-module: relation
+      x-fr:
+      - FR-REL-006
+      x-br:
+      - BR-AUTH-001
+      - BR-AUTH-002
+      - BR-AUTH-003
+      - BR-AUTH-004
+      - BR-REL-003
+      - BR-REL-004
+      - BR-REL-007
+      x-uc:
+      - UC-07
+      x-ac:
+      - AC-07
+      x-required-roles: *id001
+      x-transaction: READ_ONLY
+      responses:
+        '200':
+          description: 成功；具体业务含义见操作说明
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TraceResponse'
+        '400':
+          description: 字段/完整性错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '401':
+          description: 未认证/凭证错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '403':
+          description: 权限/启用状态/自我评审/CSRF拒绝
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: 目标不存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '409':
+          description: 修订/状态/唯一/基准/图锁冲突
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '500':
+          description: 内部错误；业务写全回滚
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/Id'
+      - name: depth
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 10
+          default: 2
+        description: 实现安全边界，有限深度；不改变关系语义
+      - name: relationType
+        in: query
+        required: false
+        schema:
+          $ref: '#/components/schemas/RelationType'
+        description: relationType
+  /requirements/{id}/changes:
+    post:
+      operationId: createChange
+      tags:
+      - change
+      summary: 目标已基线且三种正式状态之一；复制当前基准及八字段，唯一活动CR
+      description: 目标已基线且三种正式状态之一；复制当前基准及八字段，唯一活动CR。仅启用账号；服务端重新检查角色并集及独立业务限制。
+      x-module: change
+      x-fr:
+      - FR-AUDIT-001
+      - FR-CR-001
+      - FR-CR-002
+      x-br:
+      - BR-AUDIT-001
+      - BR-AUDIT-002
+      - BR-AUDIT-003
+      - BR-AUDIT-004
+      - BR-AUDIT-006
+      - BR-AUTH-001
+      - BR-AUTH-002
+      - BR-AUTH-003
+      - BR-AUTH-004
+      - BR-CR-001
+      - BR-CR-002
+      - BR-CR-003
+      - BR-CR-004
+      - BR-CR-005
+      - BR-CR-006
+      - BR-CR-007
+      - BR-CR-021
+      - BR-REQ-013
+      x-uc:
+      - UC-10
+      - UC-S1
+      x-ac:
+      - AC-06
+      - AC-10
+      x-required-roles: *id003
+      x-transaction: APPLICATION_REQUIRED
+      responses:
+        '201':
+          description: 成功；具体业务含义见操作说明
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChangeRequestResponse'
+        '400':
+          description: 字段/完整性错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '401':
+          description: 未认证/凭证错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '403':
+          description: 权限/启用状态/自我评审/CSRF拒绝
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: 目标不存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '409':
+          description: 修订/状态/唯一/基准/图锁冲突
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '500':
+          description: 内部错误；业务写全回滚
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/Id'
+      - $ref: '#/components/parameters/CsrfHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateChangeRequest'
+    get:
+      operationId: listChanges
+      tags:
+      - change
+      summary: 读取需求变更记录与各终态历史
+      description: 读取需求变更记录与各终态历史。仅启用账号；服务端重新检查角色并集及独立业务限制。
+      x-module: change
+      x-fr:
+      - FR-CR-007
+      - FR-SEARCH-007
+      x-br:
+      - BR-AUDIT-005
+      - BR-AUTH-001
+      - BR-AUTH-002
+      - BR-AUTH-003
+      - BR-AUTH-004
+      - BR-CR-020
+      - BR-VER-005
+      - BR-VER-007
+      - BR-VER-009
+      x-uc:
+      - UC-06
+      - UC-10
+      - UC-11
+      - UC-12
+      x-ac:
+      - AC-06
+      - AC-09
+      x-required-roles: *id001
+      x-transaction: READ_ONLY
+      responses:
+        '200':
+          description: 成功；具体业务含义见操作说明
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChangeRequestResponsePage'
+        '400':
+          description: 字段/完整性错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '401':
+          description: 未认证/凭证错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '403':
+          description: 权限/启用状态/自我评审/CSRF拒绝
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: 目标不存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '409':
+          description: 修订/状态/唯一/基准/图锁冲突
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '500':
+          description: 内部错误；业务写全回滚
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/Id'
+      - $ref: '#/components/parameters/Page'
+      - $ref: '#/components/parameters/Size'
+      - name: status
+        in: query
+        required: false
+        schema:
+          $ref: '#/components/schemas/ChangeStatus'
+        description: status
+  /changes/{id}:
+    get:
+      operationId: getChange
+      tags:
+      - change
+      summary: 读取申请、固定基准、八项建议、状态、产生版本关联入口
+      description: 读取申请、固定基准、八项建议、状态、产生版本关联入口。仅启用账号；服务端重新检查角色并集及独立业务限制。
+      x-module: change
+      x-fr:
+      - FR-CR-002
+      - FR-CR-007
+      x-br:
+      - BR-AUDIT-005
+      - BR-AUTH-001
+      - BR-AUTH-002
+      - BR-AUTH-003
+      - BR-AUTH-004
+      - BR-CR-004
+      - BR-CR-006
+      - BR-CR-007
+      - BR-CR-020
+      - BR-REQ-013
+      - BR-VER-007
+      x-uc:
+      - UC-10
+      - UC-11
+      - UC-12
+      x-ac:
+      - AC-06
+      x-required-roles: *id001
+      x-transaction: READ_ONLY
+      responses:
+        '200':
+          description: 成功；具体业务含义见操作说明
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChangeRequestResponse'
+        '400':
+          description: 字段/完整性错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '401':
+          description: 未认证/凭证错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '403':
+          description: 权限/启用状态/自我评审/CSRF拒绝
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: 目标不存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '409':
+          description: 修订/状态/唯一/基准/图锁冲突
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '500':
+          description: 内部错误；业务写全回滚
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/Id'
+    patch:
+      operationId: editChange
+      tags:
+      - change
+      summary: 仅DRAFT编辑申请/建议；不得改基准/提出者/状态
+      description: 仅DRAFT编辑申请/建议；不得改基准/提出者/状态。仅启用账号；服务端重新检查角色并集及独立业务限制。
+      x-module: change
+      x-fr:
+      - FR-AUDIT-001
+      - FR-CR-002
+      x-br:
+      - BR-AUDIT-001
+      - BR-AUDIT-002
+      - BR-AUDIT-003
+      - BR-AUDIT-004
+      - BR-AUDIT-006
+      - BR-AUTH-001
+      - BR-AUTH-002
+      - BR-AUTH-003
+      - BR-AUTH-004
+      - BR-CR-004
+      - BR-CR-006
+      - BR-CR-007
+      - BR-REQ-013
+      x-uc:
+      - UC-10
+      - UC-S1
+      x-ac:
+      - AC-06
+      - AC-10
+      x-required-roles: *id003
+      x-transaction: APPLICATION_REQUIRED
+      responses:
+        '200':
+          description: 成功；具体业务含义见操作说明
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChangeRequestResponse'
+        '400':
+          description: 字段/完整性错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '401':
+          description: 未认证/凭证错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '403':
+          description: 权限/启用状态/自我评审/CSRF拒绝
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: 目标不存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '409':
+          description: 修订/状态/唯一/基准/图锁冲突
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '500':
+          description: 内部错误；业务写全回滚
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/Id'
+      - $ref: '#/components/parameters/CsrfHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EditChangeRequest'
+  /changes/{id}/submit:
+    post:
+      operationId: submitChange
+      tags:
+      - change
+      summary: 锁定对应CR，逐值复制其基准、标题、理由及八proposed字段到新PENDING快照，同事务置UNDER_REVIEW
+      description: 锁定对应CR，逐值复制其基准、标题、理由及八proposed字段到新PENDING快照，同事务置UNDER_REVIEW。仅启用账号；服务端重新检查角色并集及独立业务限制。
+      x-module: change
+      x-fr:
+      - FR-AUDIT-001
+      - FR-AUDIT-002
+      - FR-CR-003
+      - FR-CR-007
+      x-br:
+      - BR-AUDIT-001
+      - BR-AUDIT-002
+      - BR-AUDIT-003
+      - BR-AUDIT-004
+      - BR-AUDIT-005
+      - BR-AUDIT-006
+      - BR-AUTH-001
+      - BR-AUTH-002
+      - BR-AUTH-003
+      - BR-AUTH-004
+      - BR-CR-007
+      - BR-CR-020
+      - BR-REQ-013
+      - BR-VER-007
+      x-uc:
+      - UC-10
+      - UC-11
+      - UC-12
+      - UC-S1
+      x-ac:
+      - AC-06
+      - AC-10
+      x-required-roles: *id003
+      x-transaction: APPLICATION_REQUIRED
+      responses:
+        '201':
+          description: 成功；具体业务含义见操作说明
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChangeRequestReviewResponse'
+        '400':
+          description: 字段/完整性错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '401':
+          description: 未认证/凭证错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '403':
+          description: 权限/启用状态/自我评审/CSRF拒绝
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: 目标不存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '409':
+          description: 修订/状态/唯一/基准/图锁冲突
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '500':
+          description: 内部错误；业务写全回滚
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/Id'
+      - $ref: '#/components/parameters/CsrfHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LockCommand'
+  /changes/{id}/cancel:
+    post:
+      operationId: cancelChange
+      tags:
+      - change
+      summary: 提出者本人取消自己的DRAFT，CANCELLED终态并释放活动占用
+      description: 提出者本人取消自己的DRAFT，CANCELLED终态并释放活动占用。仅启用账号；服务端重新检查角色并集及独立业务限制。
+      x-module: change
+      x-fr:
+      - FR-AUDIT-001
+      - FR-AUDIT-002
+      - FR-CR-008
+      x-br:
+      - BR-AUDIT-001
+      - BR-AUDIT-002
+      - BR-AUDIT-003
+      - BR-AUDIT-004
+      - BR-AUDIT-006
+      - BR-AUTH-001
+      - BR-AUTH-002
+      - BR-AUTH-003
+      - BR-AUTH-004
+      - BR-CR-005
+      - BR-CR-018
+      x-uc:
+      - UC-10
+      - UC-S1
+      x-ac:
+      - AC-06
+      - AC-10
+      x-required-roles: *id003
+      x-transaction: APPLICATION_REQUIRED
+      responses:
+        '200':
+          description: 成功；具体业务含义见操作说明
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChangeRequestResponse'
+        '400':
+          description: 字段/完整性错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '401':
+          description: 未认证/凭证错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '403':
+          description: 权限/启用状态/自我评审/CSRF拒绝
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: 目标不存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '409':
+          description: 修订/状态/唯一/基准/图锁冲突
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '500':
+          description: 内部错误；业务写全回滚
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/Id'
+      - $ref: '#/components/parameters/CsrfHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LockCommand'
+  /changes/{id}/reviews:
+    get:
+      operationId: listChangeReviews
+      tags:
+      - change
+      summary: 读取所有不可变11项提交快照与各轮决策
+      description: 读取所有不可变11项提交快照与各轮决策。仅启用账号；服务端重新检查角色并集及独立业务限制。
+      x-module: change
+      x-fr:
+      - FR-CR-007
+      x-br:
+      - BR-AUDIT-005
+      - BR-AUTH-001
+      - BR-AUTH-002
+      - BR-AUTH-003
+      - BR-AUTH-004
+      - BR-CR-020
+      - BR-VER-007
+      x-uc:
+      - UC-10
+      - UC-11
+      - UC-12
+      x-ac:
+      - AC-06
+      x-required-roles: *id001
+      x-transaction: READ_ONLY
+      responses:
+        '200':
+          description: 成功；具体业务含义见操作说明
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChangeRequestReviewResponsePage'
+        '400':
+          description: 字段/完整性错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '401':
+          description: 未认证/凭证错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '403':
+          description: 权限/启用状态/自我评审/CSRF拒绝
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: 目标不存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '409':
+          description: 修订/状态/唯一/基准/图锁冲突
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '500':
+          description: 内部错误；业务写全回滚
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/Id'
+      - $ref: '#/components/parameters/Page'
+      - $ref: '#/components/parameters/Size'
+  /change-reviews/pending:
+    get:
+      operationId: listPendingChangeReviews
+      tags:
+      - change
+      summary: 待处理变更PENDING轮次，显示完整提交快照
+      description: 待处理变更PENDING轮次，显示完整提交快照。仅启用账号；服务端重新检查角色并集及独立业务限制。
+      x-module: change
+      x-fr:
+      - FR-CR-004
+      - FR-CR-005
+      - FR-CR-009
+      x-br:
+      - BR-AUTH-001
+      - BR-AUTH-002
+      - BR-AUTH-003
+      - BR-AUTH-004
+      - BR-CR-008
+      - BR-CR-009
+      - BR-CR-010
+      - BR-CR-017
+      - BR-CR-019
+      - BR-CR-020
+      - BR-CR-022
+      x-uc:
+      - UC-11
+      x-ac:
+      - AC-06
+      x-required-roles: *id005
+      x-transaction: READ_ONLY
+      responses:
+        '200':
+          description: 成功；具体业务含义见操作说明
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChangeRequestReviewResponsePage'
+        '400':
+          description: 字段/完整性错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '401':
+          description: 未认证/凭证错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '403':
+          description: 权限/启用状态/自我评审/CSRF拒绝
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: 目标不存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '409':
+          description: 修订/状态/唯一/基准/图锁冲突
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '500':
+          description: 内部错误；业务写全回滚
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      parameters:
+      - $ref: '#/components/parameters/Page'
+      - $ref: '#/components/parameters/Size'
+  /change-reviews/{id}/decision:
+    post:
+      operationId: decideChangeReview
+      tags:
+      - change
+      summary: 非proposer评审者一次决策；APPROVED不生成版本；拒绝终态，退回DRAFT可重提新轮次
+      description: 非proposer评审者一次决策；APPROVED不生成版本；拒绝终态，退回DRAFT可重提新轮次。仅启用账号；服务端重新检查角色并集及独立业务限制。
+      x-module: change
+      x-fr:
+      - FR-AUDIT-001
+      - FR-AUDIT-002
+      - FR-CR-004
+      - FR-CR-005
+      - FR-CR-007
+      - FR-CR-009
+      x-br:
+      - BR-AUDIT-001
+      - BR-AUDIT-002
+      - BR-AUDIT-003
+      - BR-AUDIT-004
+      - BR-AUDIT-005
+      - BR-AUDIT-006
+      - BR-AUTH-001
+      - BR-AUTH-002
+      - BR-AUTH-003
+      - BR-AUTH-004
+      - BR-CR-008
+      - BR-CR-009
+      - BR-CR-010
+      - BR-CR-017
+      - BR-CR-019
+      - BR-CR-020
+      - BR-CR-022
+      - BR-VER-007
+      x-uc:
+      - UC-10
+      - UC-11
+      - UC-12
+      - UC-S1
+      x-ac:
+      - AC-06
+      - AC-10
+      x-required-roles: *id005
+      x-transaction: APPLICATION_REQUIRED
+      responses:
+        '200':
+          description: 成功；具体业务含义见操作说明
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChangeDecisionResponse'
+        '400':
+          description: 字段/完整性错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '401':
+          description: 未认证/凭证错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '403':
+          description: 权限/启用状态/自我评审/CSRF拒绝
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: 目标不存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '409':
+          description: 修订/状态/唯一/基准/图锁冲突
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '500':
+          description: 内部错误；业务写全回滚
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/Id'
+      - $ref: '#/components/parameters/CsrfHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChangeDecisionRequest'
+  /changes/{id}/apply:
+    post:
+      operationId: applyChange
+      tags:
+      - change
+      summary: 批准且当前同需求基准，原子生成n+1、更新八字段/指针/APPROVED、CR APPLIED及成功审计
+      description: 批准且当前同需求基准，原子生成n+1、更新八字段/指针/APPROVED、CR APPLIED及成功审计。仅启用账号；服务端重新检查角色并集及独立业务限制。
+      x-module: change
+      x-fr:
+      - FR-AUDIT-001
+      - FR-AUDIT-002
+      - FR-AUDIT-003
+      - FR-CR-006
+      - FR-CR-007
+      - FR-LIFE-001
+      - FR-LIFE-003
+      - FR-VER-001
+      x-br:
+      - BR-AUDIT-001
+      - BR-AUDIT-002
+      - BR-AUDIT-003
+      - BR-AUDIT-004
+      - BR-AUDIT-005
+      - BR-AUDIT-006
+      - BR-AUTH-001
+      - BR-AUTH-002
+      - BR-AUTH-003
+      - BR-AUTH-004
+      - BR-CR-011
+      - BR-CR-012
+      - BR-CR-013
+      - BR-CR-014
+      - BR-CR-015
+      - BR-CR-016
+      - BR-CR-020
+      - BR-CR-021
+      - BR-CR-022
+      - BR-LIFE-001
+      - BR-LIFE-002
+      - BR-LIFE-004
+      - BR-LIFE-009
+      - BR-LIFE-010
+      - BR-VER-001
+      - BR-VER-002
+      - BR-VER-003
+      - BR-VER-004
+      - BR-VER-005
+      - BR-VER-006
+      - BR-VER-007
+      - BR-VER-010
+      x-uc:
+      - UC-04
+      - UC-05
+      - UC-10
+      - UC-11
+      - UC-12
+      - UC-S1
+      x-ac:
+      - AC-03
+      - AC-05
+      - AC-06
+      - AC-10
+      - AC-11
+      x-required-roles: *id003
+      x-transaction: APPLICATION_REQUIRED
+      responses:
+        '200':
+          description: 成功；具体业务含义见操作说明
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApplyChangeResponse'
+        '400':
+          description: 字段/完整性错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '401':
+          description: 未认证/凭证错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '403':
+          description: 权限/启用状态/自我评审/CSRF拒绝
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: 目标不存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '409':
+          description: 修订/状态/唯一/基准/图锁冲突
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '500':
+          description: 内部错误；业务写全回滚
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/Id'
+      - $ref: '#/components/parameters/CsrfHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ApplyChangeRequest'
+  /requirements/{id}/comments:
+    get:
+      operationId: listComments
+      tags:
+      - comment
+      summary: 读取评论安全投影，已删正文不返回
+      description: 读取评论安全投影，已删正文不返回。仅启用账号；服务端重新检查角色并集及独立业务限制。
+      x-module: comment
+      x-fr:
+      - FR-COM-002
+      - FR-COM-003
+      x-br:
+      - BR-AUDIT-003
+      - BR-AUDIT-004
+      - BR-AUTH-001
+      - BR-AUTH-002
+      - BR-AUTH-003
+      - BR-AUTH-004
+      - BR-COM-003
+      - BR-COM-004
+      - BR-COM-005
+      - BR-REQ-012
+      x-uc:
+      - UC-09
+      x-ac:
+      - AC-08
+      x-required-roles: *id001
+      x-transaction: READ_ONLY
+      responses:
+        '200':
+          description: 成功；具体业务含义见操作说明
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommentResponsePage'
+        '400':
+          description: 字段/完整性错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '401':
+          description: 未认证/凭证错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '403':
+          description: 权限/启用状态/自我评审/CSRF拒绝
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: 目标不存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '409':
+          description: 修订/状态/唯一/基准/图锁冲突
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '500':
+          description: 内部错误；业务写全回滚
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/Id'
+      - $ref: '#/components/parameters/Page'
+      - $ref: '#/components/parameters/Size'
+    post:
+      operationId: createComment
+      tags:
+      - comment
+      summary: 未撤销需求发布非空评论，作者和时间由服务端生成
+      description: 未撤销需求发布非空评论，作者和时间由服务端生成。仅启用账号；服务端重新检查角色并集及独立业务限制。
+      x-module: comment
+      x-fr:
+      - FR-AUDIT-001
+      - FR-COM-001
+      - FR-COM-003
+      x-br:
+      - BR-AUDIT-001
+      - BR-AUDIT-002
+      - BR-AUDIT-003
+      - BR-AUDIT-004
+      - BR-AUDIT-006
+      - BR-AUTH-001
+      - BR-AUTH-002
+      - BR-AUTH-003
+      - BR-AUTH-004
+      - BR-COM-001
+      - BR-COM-002
+      - BR-COM-003
+      - BR-COM-004
+      - BR-COM-006
+      x-uc:
+      - UC-09
+      - UC-S1
+      x-ac:
+      - AC-08
+      - AC-10
+      x-required-roles:
+      - REQUIREMENT_ENGINEER
+      - REVIEWER
+      - PROJECT_MEMBER
+      x-transaction: APPLICATION_REQUIRED
+      responses:
+        '201':
+          description: 成功；具体业务含义见操作说明
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommentResponse'
+        '400':
+          description: 字段/完整性错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '401':
+          description: 未认证/凭证错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '403':
+          description: 权限/启用状态/自我评审/CSRF拒绝
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: 目标不存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '409':
+          description: 修订/状态/唯一/基准/图锁冲突
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '500':
+          description: 内部错误；业务写全回滚
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/Id'
+      - $ref: '#/components/parameters/CsrfHeader'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateCommentRequest'
+  /comments/{id}:
+    delete:
+      operationId: deleteOwnComment
+      tags:
+      - comment
+      summary: 仅作者本人逻辑删除，数据库保留正文/作者/时间及删除证据
+      description: 仅作者本人逻辑删除，数据库保留正文/作者/时间及删除证据。仅启用账号；服务端重新检查角色并集及独立业务限制。
+      x-module: comment
+      x-fr:
+      - FR-AUDIT-001
+      - FR-COM-004
+      x-br:
+      - BR-AUDIT-001
+      - BR-AUDIT-002
+      - BR-AUDIT-003
+      - BR-AUDIT-004
+      - BR-AUDIT-006
+      - BR-AUTH-001
+      - BR-AUTH-002
+      - BR-AUTH-003
+      - BR-AUTH-004
+      - BR-COM-002
+      - BR-COM-005
+      x-uc:
+      - UC-09
+      - UC-S1
+      x-ac:
+      - AC-08
+      - AC-10
+      x-required-roles:
+      - REQUIREMENT_ENGINEER
+      - REVIEWER
+      - PROJECT_MEMBER
+      x-transaction: APPLICATION_REQUIRED
+      responses:
+        '204':
+          description: 成功；具体业务含义见操作说明
+        '400':
+          description: 字段/完整性错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '401':
+          description: 未认证/凭证错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '403':
+          description: 权限/启用状态/自我评审/CSRF拒绝
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: 目标不存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '409':
+          description: 修订/状态/唯一/基准/图锁冲突
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '500':
+          description: 内部错误；业务写全回滚
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/Id'
+      - $ref: '#/components/parameters/CsrfHeader'
+  /requirements/{id}/history:
+    get:
+      operationId: listRequirementHistory
+      tags:
+      - audit
+      summary: 当前需求业务审计只读，版本与评审历史通过独立只读入口查看
+      description: 当前需求业务审计只读，版本与评审历史通过独立只读入口查看。仅启用账号；服务端重新检查角色并集及独立业务限制。
+      x-module: audit
+      x-fr:
+      - FR-AUDIT-004
+      x-br:
+      - BR-AUDIT-002
+      - BR-AUDIT-005
+      - BR-AUTH-001
+      - BR-AUTH-002
+      - BR-AUTH-003
+      - BR-AUTH-004
+      x-uc:
+      - UC-08
+      x-ac:
+      - AC-10
+      x-required-roles: *id001
+      x-transaction: READ_ONLY
+      responses:
+        '200':
+          description: 成功；具体业务含义见操作说明
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuditResponsePage'
+        '400':
+          description: 字段/完整性错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '401':
+          description: 未认证/凭证错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '403':
+          description: 权限/启用状态/自我评审/CSRF拒绝
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: 目标不存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '409':
+          description: 修订/状态/唯一/基准/图锁冲突
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '500':
+          description: 内部错误；业务写全回滚
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          $ref: '#/components/schemas/Id'
+      - $ref: '#/components/parameters/Page'
+      - $ref: '#/components/parameters/Size'
+      - &id006
+        name: from
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date-time
+        description: UTC过滤起点
+      - &id007
+        name: to
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date-time
+        description: UTC过滤终点
+      - &id008
+        name: action
+        in: query
+        required: false
+        schema:
+          type: string
+          maxLength: 64
+        description: action
+  /audit-events:
+    get:
+      operationId: listAuditEvents
+      tags:
+      - audit
+      summary: 全系统业务审计只读ADMIN-only，安全字段白名单，无密码或凭证
+      description: 全系统业务审计只读ADMIN-only，安全字段白名单，无密码或凭证。仅启用账号；服务端重新检查角色并集及独立业务限制。
+      x-module: audit
+      x-fr:
+      - FR-AUDIT-004
+      x-br:
+      - BR-AUDIT-002
+      - BR-AUDIT-005
+      - BR-AUTH-001
+      - BR-AUTH-002
+      - BR-AUTH-003
+      - BR-AUTH-004
+      x-uc:
+      - UC-08
+      x-ac:
+      - AC-10
+      x-required-roles: *id002
+      x-transaction: READ_ONLY
+      responses:
+        '200':
+          description: 成功；具体业务含义见操作说明
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuditResponsePage'
+        '400':
+          description: 字段/完整性错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '401':
+          description: 未认证/凭证错误
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '403':
+          description: 权限/启用状态/自我评审/CSRF拒绝
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '404':
+          description: 目标不存在
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '409':
+          description: 修订/状态/唯一/基准/图锁冲突
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+        '500':
+          description: 内部错误；业务写全回滚
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiError'
+      parameters:
+      - $ref: '#/components/parameters/Page'
+      - $ref: '#/components/parameters/Size'
+      - *id006
+      - *id007
+      - *id008
+components:
+  securitySchemes:
+    cookieSession:
+      type: apiKey
+      in: cookie
+      name: JSESSIONID
+      description: HttpOnly Secure SameSite=Lax，同源session；所有unsafe请求另需X-CSRF-TOKEN，包括login/logout。
+  parameters:
+    Page:
+      name: page
+      in: query
+      schema:
+        type: integer
+        minimum: 0
+        default: 0
+    Size:
+      name: size
+      in: query
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+    CsrfHeader:
+      name: X-CSRF-TOKEN
+      in: header
+      required: true
+      schema:
+        type: string
+        minLength: 1
+      description: GET /auth/csrf取得；登录/退出后刷新；不是actor身份。
+  schemas:
+    Id:
+      type: string
+      pattern: ^[1-9][0-9]*$
+      maxLength: 19
+      description: SQL signed BIGINT正整数十进制字符串；服务端再校验<=9223372036854775807，避免JavaScript Number精度丢失。
+    LockVersion:
+      type: string
+      pattern: ^(0|[1-9][0-9]*)$
+      maxLength: 19
+      description: 原有signed BIGINT lockVersion非负十进制字符串；服务端校验<=9223372036854775807、比较并由@Version更新。
+    RoleCode:
+      type: string
+      enum:
+      - ADMIN
+      - REQUIREMENT_ENGINEER
+      - REVIEWER
+      - PROJECT_MEMBER
+      - VIEWER
+    RequirementLevel:
+      type: string
+      enum:
+      - BUSINESS
+      - USER
+      - SYSTEM
+    RequirementKind:
+      type: string
+      enum:
+      - FUNCTIONAL
+      - QUALITY
+      - CONSTRAINT
+    Priority:
+      type: string
+      enum:
+      - LOW
+      - MEDIUM
+      - HIGH
+      - CRITICAL
+    RequirementStatus:
+      type: string
+      enum:
+      - DRAFT
+      - UNDER_REVIEW
+      - APPROVED
+      - REJECTED
+      - IMPLEMENTED
+      - VERIFIED
+    ChangeStatus:
+      type: string
+      enum:
+      - DRAFT
+      - UNDER_REVIEW
+      - APPROVED
+      - REJECTED
+      - APPLIED
+      - CANCELLED
+    ReviewStatus:
+      type: string
+      enum:
+      - PENDING
+      - COMPLETED
+    Decision:
+      type: string
+      enum:
+      - APPROVE
+      - REJECT
+      - REQUEST_CHANGES
+    RelationType:
+      type: string
+      enum:
+      - DEPENDS_ON
+      - REFINES
+      - DERIVED_FROM
+      - CONFLICTS_WITH
+      - DUPLICATES
+      - RELATES_TO
+    RequirementResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        requirementId:
+          type: string
+          pattern: ^[1-9][0-9]*$
+          maxLength: 19
+          description: SQL signed BIGINT正整数十进制字符串；服务端再校验<=9223372036854775807，避免JavaScript Number精度丢失。
+          readOnly: true
+        requirementKey:
+          type: string
+          maxLength: 32
+          readOnly: true
+        title:
+          type: string
+          maxLength: 200
+          readOnly: true
+        description:
+          type: string
+          readOnly: true
+        level:
+          type: string
+          maxLength: 32
+          enum:
+          - BUSINESS
+          - USER
+          - SYSTEM
+          readOnly: true
+        kind:
+          type: string
+          maxLength: 32
+          enum:
+          - FUNCTIONAL
+          - QUALITY
+          - CONSTRAINT
+          readOnly: true
+        priority:
+          type: string
+          maxLength: 32
+          enum:
+          - LOW
+          - MEDIUM
+          - HIGH
+          - CRITICAL
+          readOnly: true
+        source:
+          type:
+          - string
+          - 'null'
+          readOnly: true
+        rationale:
+          type:
+          - string
+          - 'null'
+          readOnly: true
+        acceptanceCriteria:
+          type:
+          - string
+          - 'null'
+          readOnly: true
+        status:
+          type: string
+          maxLength: 32
+          enum:
+          - DRAFT
+          - UNDER_REVIEW
+          - APPROVED
+          - REJECTED
+          - IMPLEMENTED
+          - VERIFIED
+          readOnly: true
+        creatorId:
+          type: string
+          pattern: ^[1-9][0-9]*$
+          maxLength: 19
+          description: SQL signed BIGINT正整数十进制字符串；服务端再校验<=9223372036854775807，避免JavaScript Number精度丢失。
+          readOnly: true
+        assigneeId:
+          type:
+          - string
+          - 'null'
+          pattern: ^[1-9][0-9]*$
+          maxLength: 19
+          description: SQL signed BIGINT正整数十进制字符串；服务端再校验<=9223372036854775807，避免JavaScript Number精度丢失。
+          readOnly: true
+        currentVersionId:
+          type:
+          - string
+          - 'null'
+          pattern: ^[1-9][0-9]*$
+          maxLength: 19
+          description: SQL signed BIGINT正整数十进制字符串；服务端再校验<=9223372036854775807，避免JavaScript Number精度丢失。
+          readOnly: true
+        firstSubmittedAt:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          pattern: .*Z$
+          description: 服务端UTC，ISO8601 Z；SQL DATETIME(6)，微秒精度。
+          readOnly: true
+        isWithdrawn:
+          type: integer
+          minimum: 0
+          enum:
+          - 0
+          - 1
+          readOnly: true
+        withdrawnBy:
+          type:
+          - string
+          - 'null'
+          pattern: ^[1-9][0-9]*$
+          maxLength: 19
+          description: SQL signed BIGINT正整数十进制字符串；服务端再校验<=9223372036854775807，避免JavaScript Number精度丢失。
+          readOnly: true
+        withdrawnAt:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          pattern: .*Z$
+          description: 服务端UTC，ISO8601 Z；SQL DATETIME(6)，微秒精度。
+          readOnly: true
+        createdAt:
+          type: string
+          format: date-time
+          pattern: .*Z$
+          description: 服务端UTC，ISO8601 Z；SQL DATETIME(6)，微秒精度。
+          readOnly: true
+        updatedAt:
+          type: string
+          format: date-time
+          pattern: .*Z$
+          description: 服务端UTC，ISO8601 Z；SQL DATETIME(6)，微秒精度。
+          readOnly: true
+        lockVersion:
+          type: string
+          pattern: ^(0|[1-9][0-9]*)$
+          maxLength: 19
+          description: 原有signed BIGINT lockVersion非负十进制字符串；服务端校验<=9223372036854775807、比较并由@Version更新。
+          readOnly: true
+        creator:
+          $ref: '#/components/schemas/UserSummary'
+        assignee:
+          oneOf:
+          - $ref: '#/components/schemas/UserSummary'
+          - type: 'null'
+        tags:
+          type: array
+          items:
+            $ref: '#/components/schemas/TagResponse'
+      required:
+      - requirementId
+      - requirementKey
+      - title
+      - description
+      - level
+      - kind
+      - priority
+      - source
+      - rationale
+      - acceptanceCriteria
+      - status
+      - creatorId
+      - assigneeId
+      - currentVersionId
+      - firstSubmittedAt
+      - isWithdrawn
+      - withdrawnBy
+      - withdrawnAt
+      - createdAt
+      - updatedAt
+      - lockVersion
+      - creator
+      - assignee
+      - tags
+      description: 安全传输投影；不是JPA Entity；nullable逐项沿用Baseline 1.3，数据库generated活动键不公开。
+    RequirementVersionResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        versionId:
+          type: string
+          pattern: ^[1-9][0-9]*$
+          maxLength: 19
+          description: SQL signed BIGINT正整数十进制字符串；服务端再校验<=9223372036854775807，避免JavaScript Number精度丢失。
+          readOnly: true
+        requirementId:
+          type: string
+          pattern: ^[1-9][0-9]*$
+          maxLength: 19
+          description: SQL signed BIGINT正整数十进制字符串；服务端再校验<=9223372036854775807，避免JavaScript Number精度丢失。
+          readOnly: true
+        versionNo:
+          type: integer
+          minimum: 1
+          readOnly: true
+        title:
+          type: string
+          maxLength: 200
+          readOnly: true
+        description:
+          type: string
+          readOnly: true
+        level:
+          type: string
+          maxLength: 32
+          enum:
+          - BUSINESS
+          - USER
+          - SYSTEM
+          readOnly: true
+        kind:
+          type: string
+          maxLength: 32
+          enum:
+          - FUNCTIONAL
+          - QUALITY
+          - CONSTRAINT
+          readOnly: true
+        priority:
+          type: string
+          maxLength: 32
+          enum:
+          - LOW
+          - MEDIUM
+          - HIGH
+          - CRITICAL
+          readOnly: true
+        source:
+          type: string
+          readOnly: true
+        rationale:
+          type: string
+          readOnly: true
+        acceptanceCriteria:
+          type: string
+          readOnly: true
+        initialReviewId:
+          type:
+          - string
+          - 'null'
+          pattern: ^[1-9][0-9]*$
+          maxLength: 19
+          description: SQL signed BIGINT正整数十进制字符串；服务端再校验<=9223372036854775807，避免JavaScript Number精度丢失。
+          readOnly: true
+        appliedChangeRequestId:
+          type:
+          - string
+          - 'null'
+          pattern: ^[1-9][0-9]*$
+          maxLength: 19
+          description: SQL signed BIGINT正整数十进制字符串；服务端再校验<=9223372036854775807，避免JavaScript Number精度丢失。
+          readOnly: true
+        createdBy:
+          type: string
+          pattern: ^[1-9][0-9]*$
+          maxLength: 19
+          description: SQL signed BIGINT正整数十进制字符串；服务端再校验<=9223372036854775807，避免JavaScript Number精度丢失。
+          readOnly: true
+        createdAt:
+          type: string
+          format: date-time
+          pattern: .*Z$
+          description: 服务端UTC，ISO8601 Z；SQL DATETIME(6)，微秒精度。
+          readOnly: true
+        changeReason:
+          type: string
+          readOnly: true
+      required:
+      - versionId
+      - requirementId
+      - versionNo
+      - title
+      - description
+      - level
+      - kind
+      - priority
+      - source
+      - rationale
+      - acceptanceCriteria
+      - initialReviewId
+      - appliedChangeRequestId
+      - createdBy
+      - createdAt
+      - changeReason
+      description: 安全传输投影；不是JPA Entity；nullable逐项沿用Baseline 1.3，数据库generated活动键不公开。
+    RequirementReviewResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        reviewId:
+          type: string
+          pattern: ^[1-9][0-9]*$
+          maxLength: 19
+          description: SQL signed BIGINT正整数十进制字符串；服务端再校验<=9223372036854775807，避免JavaScript Number精度丢失。
+          readOnly: true
+        requirementId:
+          type: string
+          pattern: ^[1-9][0-9]*$
+          maxLength: 19
+          description: SQL signed BIGINT正整数十进制字符串；服务端再校验<=9223372036854775807，避免JavaScript Number精度丢失。
+          readOnly: true
+        roundNo:
+          type: integer
+          minimum: 1
+          readOnly: true
+        snapshotTitle:
+          type: string
+          maxLength: 200
+          readOnly: true
+        snapshotDescription:
+          type: string
+          readOnly: true
+        snapshotLevel:
+          type: string
+          maxLength: 32
+          enum:
+          - BUSINESS
+          - USER
+          - SYSTEM
+          readOnly: true
+        snapshotKind:
+          type: string
+          maxLength: 32
+          enum:
+          - FUNCTIONAL
+          - QUALITY
+          - CONSTRAINT
+          readOnly: true
+        snapshotPriority:
+          type: string
+          maxLength: 32
+          enum:
+          - LOW
+          - MEDIUM
+          - HIGH
+          - CRITICAL
+          readOnly: true
+        snapshotSource:
+          type: string
+          readOnly: true
+        snapshotRationale:
+          type: string
+          readOnly: true
+        snapshotAcceptanceCriteria:
+          type: string
+          readOnly: true
+        submittedBy:
+          type: string
+          pattern: ^[1-9][0-9]*$
+          maxLength: 19
+          description: SQL signed BIGINT正整数十进制字符串；服务端再校验<=9223372036854775807，避免JavaScript Number精度丢失。
+          readOnly: true
+        submittedAt:
+          type: string
+          format: date-time
+          pattern: .*Z$
+          description: 服务端UTC，ISO8601 Z；SQL DATETIME(6)，微秒精度。
+          readOnly: true
+        reviewStatus:
+          type: string
+          maxLength: 32
+          enum:
+          - PENDING
+          - COMPLETED
+          readOnly: true
+        reviewerId:
+          type:
+          - string
+          - 'null'
+          pattern: ^[1-9][0-9]*$
+          maxLength: 19
+          description: SQL signed BIGINT正整数十进制字符串；服务端再校验<=9223372036854775807，避免JavaScript Number精度丢失。
+          readOnly: true
+        decision:
+          type:
+          - string
+          - 'null'
+          maxLength: 32
+          enum:
+          - APPROVE
+          - REJECT
+          - REQUEST_CHANGES
+          - null
+          readOnly: true
+        comment:
+          type:
+          - string
+          - 'null'
+          readOnly: true
+        decidedAt:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          pattern: .*Z$
+          description: 服务端UTC，ISO8601 Z；SQL DATETIME(6)，微秒精度。
+          readOnly: true
+      required:
+      - reviewId
+      - requirementId
+      - roundNo
+      - snapshotTitle
+      - snapshotDescription
+      - snapshotLevel
+      - snapshotKind
+      - snapshotPriority
+      - snapshotSource
+      - snapshotRationale
+      - snapshotAcceptanceCriteria
+      - submittedBy
+      - submittedAt
+      - reviewStatus
+      - reviewerId
+      - decision
+      - comment
+      - decidedAt
+      description: 安全传输投影；不是JPA Entity；nullable逐项沿用Baseline 1.3，数据库generated活动键不公开。
+    ChangeRequestResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        changeRequestId:
+          type: string
+          pattern: ^[1-9][0-9]*$
+          maxLength: 19
+          description: SQL signed BIGINT正整数十进制字符串；服务端再校验<=9223372036854775807，避免JavaScript Number精度丢失。
+          readOnly: true
+        requirementId:
+          type: string
+          pattern: ^[1-9][0-9]*$
+          maxLength: 19
+          description: SQL signed BIGINT正整数十进制字符串；服务端再校验<=9223372036854775807，避免JavaScript Number精度丢失。
+          readOnly: true
+        baseVersionId:
+          type: string
+          pattern: ^[1-9][0-9]*$
+          maxLength: 19
+          description: SQL signed BIGINT正整数十进制字符串；服务端再校验<=9223372036854775807，避免JavaScript Number精度丢失。
+          readOnly: true
+        requestTitle:
+          type: string
+          maxLength: 200
+          readOnly: true
+        reason:
+          type: string
+          readOnly: true
+        proposedTitle:
+          type: string
+          maxLength: 200
+          readOnly: true
+        proposedDescription:
+          type: string
+          readOnly: true
+        proposedLevel:
+          type: string
+          maxLength: 32
+          enum:
+          - BUSINESS
+          - USER
+          - SYSTEM
+          readOnly: true
+        proposedKind:
+          type: string
+          maxLength: 32
+          enum:
+          - FUNCTIONAL
+          - QUALITY
+          - CONSTRAINT
+          readOnly: true
+        proposedPriority:
+          type: string
+          maxLength: 32
+          enum:
+          - LOW
+          - MEDIUM
+          - HIGH
+          - CRITICAL
+          readOnly: true
+        proposedSource:
+          type:
+          - string
+          - 'null'
+          readOnly: true
+        proposedRationale:
+          type:
+          - string
+          - 'null'
+          readOnly: true
+        proposedAcceptanceCriteria:
+          type:
+          - string
+          - 'null'
+          readOnly: true
+        status:
+          type: string
+          maxLength: 32
+          enum:
+          - DRAFT
+          - UNDER_REVIEW
+          - APPROVED
+          - REJECTED
+          - APPLIED
+          - CANCELLED
+          readOnly: true
+        createdBy:
+          type: string
+          pattern: ^[1-9][0-9]*$
+          maxLength: 19
+          description: SQL signed BIGINT正整数十进制字符串；服务端再校验<=9223372036854775807，避免JavaScript Number精度丢失。
+          readOnly: true
+        createdAt:
+          type: string
+          format: date-time
+          pattern: .*Z$
+          description: 服务端UTC，ISO8601 Z；SQL DATETIME(6)，微秒精度。
+          readOnly: true
+        updatedAt:
+          type: string
+          format: date-time
+          pattern: .*Z$
+          description: 服务端UTC，ISO8601 Z；SQL DATETIME(6)，微秒精度。
+          readOnly: true
+        appliedBy:
+          type:
+          - string
+          - 'null'
+          pattern: ^[1-9][0-9]*$
+          maxLength: 19
+          description: SQL signed BIGINT正整数十进制字符串；服务端再校验<=9223372036854775807，避免JavaScript Number精度丢失。
+          readOnly: true
+        appliedAt:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          pattern: .*Z$
+          description: 服务端UTC，ISO8601 Z；SQL DATETIME(6)，微秒精度。
+          readOnly: true
+        lockVersion:
+          type: string
+          pattern: ^(0|[1-9][0-9]*)$
+          maxLength: 19
+          description: 原有signed BIGINT lockVersion非负十进制字符串；服务端校验<=9223372036854775807、比较并由@Version更新。
+          readOnly: true
+      required:
+      - changeRequestId
+      - requirementId
+      - baseVersionId
+      - requestTitle
+      - reason
+      - proposedTitle
+      - proposedDescription
+      - proposedLevel
+      - proposedKind
+      - proposedPriority
+      - proposedSource
+      - proposedRationale
+      - proposedAcceptanceCriteria
+      - status
+      - createdBy
+      - createdAt
+      - updatedAt
+      - appliedBy
+      - appliedAt
+      - lockVersion
+      description: 安全传输投影；不是JPA Entity；nullable逐项沿用Baseline 1.3，数据库generated活动键不公开。
+    ChangeRequestReviewResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        changeReviewId:
+          type: string
+          pattern: ^[1-9][0-9]*$
+          maxLength: 19
+          description: SQL signed BIGINT正整数十进制字符串；服务端再校验<=9223372036854775807，避免JavaScript Number精度丢失。
+          readOnly: true
+        requirementId:
+          type: string
+          pattern: ^[1-9][0-9]*$
+          maxLength: 19
+          description: SQL signed BIGINT正整数十进制字符串；服务端再校验<=9223372036854775807，避免JavaScript Number精度丢失。
+          readOnly: true
+        changeRequestId:
+          type: string
+          pattern: ^[1-9][0-9]*$
+          maxLength: 19
+          description: SQL signed BIGINT正整数十进制字符串；服务端再校验<=9223372036854775807，避免JavaScript Number精度丢失。
+          readOnly: true
+        roundNo:
+          type: integer
+          minimum: 1
+          readOnly: true
+        snapshotBaseVersionId:
+          type: string
+          pattern: ^[1-9][0-9]*$
+          maxLength: 19
+          description: SQL signed BIGINT正整数十进制字符串；服务端再校验<=9223372036854775807，避免JavaScript Number精度丢失。
+          readOnly: true
+        snapshotRequestTitle:
+          type: string
+          maxLength: 200
+          readOnly: true
+        snapshotReason:
+          type: string
+          readOnly: true
+        snapshotProposedTitle:
+          type: string
+          maxLength: 200
+          readOnly: true
+        snapshotProposedDescription:
+          type: string
+          readOnly: true
+        snapshotProposedLevel:
+          type: string
+          maxLength: 32
+          enum:
+          - BUSINESS
+          - USER
+          - SYSTEM
+          readOnly: true
+        snapshotProposedKind:
+          type: string
+          maxLength: 32
+          enum:
+          - FUNCTIONAL
+          - QUALITY
+          - CONSTRAINT
+          readOnly: true
+        snapshotProposedPriority:
+          type: string
+          maxLength: 32
+          enum:
+          - LOW
+          - MEDIUM
+          - HIGH
+          - CRITICAL
+          readOnly: true
+        snapshotProposedSource:
+          type: string
+          readOnly: true
+        snapshotProposedRationale:
+          type: string
+          readOnly: true
+        snapshotProposedAcceptanceCriteria:
+          type: string
+          readOnly: true
+        submittedBy:
+          type: string
+          pattern: ^[1-9][0-9]*$
+          maxLength: 19
+          description: SQL signed BIGINT正整数十进制字符串；服务端再校验<=9223372036854775807，避免JavaScript Number精度丢失。
+          readOnly: true
+        submittedAt:
+          type: string
+          format: date-time
+          pattern: .*Z$
+          description: 服务端UTC，ISO8601 Z；SQL DATETIME(6)，微秒精度。
+          readOnly: true
+        reviewStatus:
+          type: string
+          maxLength: 32
+          enum:
+          - PENDING
+          - COMPLETED
+          readOnly: true
+        reviewerId:
+          type:
+          - string
+          - 'null'
+          pattern: ^[1-9][0-9]*$
+          maxLength: 19
+          description: SQL signed BIGINT正整数十进制字符串；服务端再校验<=9223372036854775807，避免JavaScript Number精度丢失。
+          readOnly: true
+        decision:
+          type:
+          - string
+          - 'null'
+          maxLength: 32
+          enum:
+          - APPROVE
+          - REJECT
+          - REQUEST_CHANGES
+          - null
+          readOnly: true
+        comment:
+          type:
+          - string
+          - 'null'
+          readOnly: true
+        decidedAt:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          pattern: .*Z$
+          description: 服务端UTC，ISO8601 Z；SQL DATETIME(6)，微秒精度。
+          readOnly: true
+      required:
+      - changeReviewId
+      - requirementId
+      - changeRequestId
+      - roundNo
+      - snapshotBaseVersionId
+      - snapshotRequestTitle
+      - snapshotReason
+      - snapshotProposedTitle
+      - snapshotProposedDescription
+      - snapshotProposedLevel
+      - snapshotProposedKind
+      - snapshotProposedPriority
+      - snapshotProposedSource
+      - snapshotProposedRationale
+      - snapshotProposedAcceptanceCriteria
+      - submittedBy
+      - submittedAt
+      - reviewStatus
+      - reviewerId
+      - decision
+      - comment
+      - decidedAt
+      description: 安全传输投影；不是JPA Entity；nullable逐项沿用Baseline 1.3，数据库generated活动键不公开。
+    RequirementRelationResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        relationId:
+          type: string
+          pattern: ^[1-9][0-9]*$
+          maxLength: 19
+          description: SQL signed BIGINT正整数十进制字符串；服务端再校验<=9223372036854775807，避免JavaScript Number精度丢失。
+          readOnly: true
+        sourceRequirementId:
+          type: string
+          pattern: ^[1-9][0-9]*$
+          maxLength: 19
+          description: SQL signed BIGINT正整数十进制字符串；服务端再校验<=9223372036854775807，避免JavaScript Number精度丢失。
+          readOnly: true
+        targetRequirementId:
+          type: string
+          pattern: ^[1-9][0-9]*$
+          maxLength: 19
+          description: SQL signed BIGINT正整数十进制字符串；服务端再校验<=9223372036854775807，避免JavaScript Number精度丢失。
+          readOnly: true
+        relationType:
+          type: string
+          maxLength: 32
+          enum:
+          - DEPENDS_ON
+          - REFINES
+          - DERIVED_FROM
+          - CONFLICTS_WITH
+          - DUPLICATES
+          - RELATES_TO
+          readOnly: true
+        description:
+          type:
+          - string
+          - 'null'
+          maxLength: 1000
+          readOnly: true
+        createdBy:
+          type: string
+          pattern: ^[1-9][0-9]*$
+          maxLength: 19
+          description: SQL signed BIGINT正整数十进制字符串；服务端再校验<=9223372036854775807，避免JavaScript Number精度丢失。
+          readOnly: true
+        createdAt:
+          type: string
+          format: date-time
+          pattern: .*Z$
+          description: 服务端UTC，ISO8601 Z；SQL DATETIME(6)，微秒精度。
+          readOnly: true
+      required:
+      - relationId
+      - sourceRequirementId
+      - targetRequirementId
+      - relationType
+      - description
+      - createdBy
+      - createdAt
+      description: 安全传输投影；不是JPA Entity；nullable逐项沿用Baseline 1.3，数据库generated活动键不公开。
+    TagResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        tagId:
+          type: string
+          pattern: ^[1-9][0-9]*$
+          maxLength: 19
+          description: SQL signed BIGINT正整数十进制字符串；服务端再校验<=9223372036854775807，避免JavaScript Number精度丢失。
+          readOnly: true
+        name:
+          type: string
+          maxLength: 50
+          readOnly: true
+        description:
+          type:
+          - string
+          - 'null'
+          maxLength: 500
+          readOnly: true
+        createdBy:
+          type: string
+          pattern: ^[1-9][0-9]*$
+          maxLength: 19
+          description: SQL signed BIGINT正整数十进制字符串；服务端再校验<=9223372036854775807，避免JavaScript Number精度丢失。
+          readOnly: true
+        createdAt:
+          type: string
+          format: date-time
+          pattern: .*Z$
+          description: 服务端UTC，ISO8601 Z；SQL DATETIME(6)，微秒精度。
+          readOnly: true
+      required:
+      - tagId
+      - name
+      - description
+      - createdBy
+      - createdAt
+      description: 安全传输投影；不是JPA Entity；nullable逐项沿用Baseline 1.3，数据库generated活动键不公开。
+    RequirementTagResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        requirementId:
+          type: string
+          pattern: ^[1-9][0-9]*$
+          maxLength: 19
+          description: SQL signed BIGINT正整数十进制字符串；服务端再校验<=9223372036854775807，避免JavaScript Number精度丢失。
+          readOnly: true
+        tagId:
+          type: string
+          pattern: ^[1-9][0-9]*$
+          maxLength: 19
+          description: SQL signed BIGINT正整数十进制字符串；服务端再校验<=9223372036854775807，避免JavaScript Number精度丢失。
+          readOnly: true
+        addedBy:
+          type: string
+          pattern: ^[1-9][0-9]*$
+          maxLength: 19
+          description: SQL signed BIGINT正整数十进制字符串；服务端再校验<=9223372036854775807，避免JavaScript Number精度丢失。
+          readOnly: true
+        addedAt:
+          type: string
+          format: date-time
+          pattern: .*Z$
+          description: 服务端UTC，ISO8601 Z；SQL DATETIME(6)，微秒精度。
+          readOnly: true
+      required:
+      - requirementId
+      - tagId
+      - addedBy
+      - addedAt
+      description: 安全传输投影；不是JPA Entity；nullable逐项沿用Baseline 1.3，数据库generated活动键不公开。
+    UserRoleResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        userId:
+          type: string
+          pattern: ^[1-9][0-9]*$
+          maxLength: 19
+          description: SQL signed BIGINT正整数十进制字符串；服务端再校验<=9223372036854775807，避免JavaScript Number精度丢失。
+          readOnly: true
+        roleId:
+          type: string
+          pattern: ^[1-9][0-9]*$
+          maxLength: 19
+          description: SQL signed BIGINT正整数十进制字符串；服务端再校验<=9223372036854775807，避免JavaScript Number精度丢失。
+          readOnly: true
+        grantedBy:
+          type: string
+          pattern: ^[1-9][0-9]*$
+          maxLength: 19
+          description: SQL signed BIGINT正整数十进制字符串；服务端再校验<=9223372036854775807，避免JavaScript Number精度丢失。
+          readOnly: true
+        grantedAt:
+          type: string
+          format: date-time
+          pattern: .*Z$
+          description: 服务端UTC，ISO8601 Z；SQL DATETIME(6)，微秒精度。
+          readOnly: true
+      required:
+      - userId
+      - roleId
+      - grantedBy
+      - grantedAt
+      description: 安全传输投影；不是JPA Entity；nullable逐项沿用Baseline 1.3，数据库generated活动键不公开。
+    UserSummary:
+      type: object
+      additionalProperties: false
+      properties:
+        userId:
+          $ref: '#/components/schemas/Id'
+        displayName:
+          type: string
+          maxLength: 100
+        accountStatus:
+          type: string
+          enum:
+          - ENABLED
+          - DISABLED
+      required:
+      - userId
+      - displayName
+      - accountStatus
+    AdminUserResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        userId:
+          type: string
+          pattern: ^[1-9][0-9]*$
+          maxLength: 19
+          description: SQL signed BIGINT正整数十进制字符串；服务端再校验<=9223372036854775807，避免JavaScript Number精度丢失。
+          readOnly: true
+        username:
+          type: string
+          maxLength: 64
+          readOnly: true
+        email:
+          type: string
+          maxLength: 254
+          readOnly: true
+        displayName:
+          type: string
+          maxLength: 100
+          readOnly: true
+        accountStatus:
+          type: string
+          maxLength: 32
+          enum:
+          - ENABLED
+          - DISABLED
+          readOnly: true
+        createdAt:
+          type: string
+          format: date-time
+          pattern: .*Z$
+          description: 服务端UTC，ISO8601 Z；SQL DATETIME(6)，微秒精度。
+          readOnly: true
+        updatedAt:
+          type: string
+          format: date-time
+          pattern: .*Z$
+          description: 服务端UTC，ISO8601 Z；SQL DATETIME(6)，微秒精度。
+          readOnly: true
+        lockVersion:
+          type: string
+          pattern: ^(0|[1-9][0-9]*)$
+          maxLength: 19
+          description: 原有signed BIGINT lockVersion非负十进制字符串；服务端校验<=9223372036854775807、比较并由@Version更新。
+          readOnly: true
+        roles:
+          type: array
+          items:
+            $ref: '#/components/schemas/RoleCode'
+          uniqueItems: true
+          description: 启用账号至少一个角色；禁用账号按原BR允许为空，不能用响应schema增加更强业务规则。
+        assignments:
+          type: array
+          items:
+            $ref: '#/components/schemas/UserRoleResponse'
+      required:
+      - userId
+      - username
+      - email
+      - displayName
+      - accountStatus
+      - createdAt
+      - updatedAt
+      - lockVersion
+      - roles
+      - assignments
+      description: 仅ADMIN；绝不返回密码或哈希。
+    CommentResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        commentId:
+          type: string
+          pattern: ^[1-9][0-9]*$
+          maxLength: 19
+          description: SQL signed BIGINT正整数十进制字符串；服务端再校验<=9223372036854775807，避免JavaScript Number精度丢失。
+          readOnly: true
+        requirementId:
+          type: string
+          pattern: ^[1-9][0-9]*$
+          maxLength: 19
+          description: SQL signed BIGINT正整数十进制字符串；服务端再校验<=9223372036854775807，避免JavaScript Number精度丢失。
+          readOnly: true
+        authorId:
+          type: string
+          pattern: ^[1-9][0-9]*$
+          maxLength: 19
+          description: SQL signed BIGINT正整数十进制字符串；服务端再校验<=9223372036854775807，避免JavaScript Number精度丢失。
+          readOnly: true
+        content:
+          type:
+          - string
+          - 'null'
+          description: isDeleted=1时必须为null，不返回已删除正文；原数据库content仍NOT NULL并保留。
+        createdAt:
+          type: string
+          format: date-time
+          pattern: .*Z$
+          description: 服务端UTC，ISO8601 Z；SQL DATETIME(6)，微秒精度。
+          readOnly: true
+        isDeleted:
+          type: integer
+          minimum: 0
+          enum:
+          - 0
+          - 1
+          readOnly: true
+        deletedBy:
+          type:
+          - string
+          - 'null'
+          pattern: ^[1-9][0-9]*$
+          maxLength: 19
+          description: SQL signed BIGINT正整数十进制字符串；服务端再校验<=9223372036854775807，避免JavaScript Number精度丢失。
+          readOnly: true
+        deletedAt:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          pattern: .*Z$
+          description: 服务端UTC，ISO8601 Z；SQL DATETIME(6)，微秒精度。
+          readOnly: true
+      required:
+      - commentId
+      - requirementId
+      - authorId
+      - content
+      - createdAt
+      - isDeleted
+      - deletedBy
+      - deletedAt
+    AuditResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        auditId:
+          type: string
+          pattern: ^[1-9][0-9]*$
+          maxLength: 19
+          description: SQL signed BIGINT正整数十进制字符串；服务端再校验<=9223372036854775807，避免JavaScript Number精度丢失。
+          readOnly: true
+        actorId:
+          type: string
+          pattern: ^[1-9][0-9]*$
+          maxLength: 19
+          description: SQL signed BIGINT正整数十进制字符串；服务端再校验<=9223372036854775807，避免JavaScript Number精度丢失。
+          readOnly: true
+        requirementId:
+          type:
+          - string
+          - 'null'
+          pattern: ^[1-9][0-9]*$
+          maxLength: 19
+          description: SQL signed BIGINT正整数十进制字符串；服务端再校验<=9223372036854775807，避免JavaScript Number精度丢失。
+          readOnly: true
+        targetType:
+          type: string
+          maxLength: 32
+          enum:
+          - USER
+          - ROLE_ASSIGNMENT
+          - REQUIREMENT
+          - REVIEW
+          - VERSION
+          - RELATION
+          - CHANGE_REQUEST
+          - CHANGE_REVIEW
+          - TAG_ASSIGNMENT
+          - TAG
+          - COMMENT
+          readOnly: true
+        targetId:
+          type: string
+          maxLength: 128
+          readOnly: true
+        action:
+          type: string
+          maxLength: 64
+          readOnly: true
+        outcome:
+          type: string
+          maxLength: 32
+          enum:
+          - SUCCESS
+          - DENIED
+          - FAILED
+          readOnly: true
+        beforeData:
+          type:
+          - object
+          - 'null'
+          additionalProperties: true
+          description: 安全字段白名单审计投影，严禁凭证/密码/哈希。
+          readOnly: true
+        afterData:
+          type:
+          - object
+          - 'null'
+          additionalProperties: true
+          description: 安全字段白名单审计投影，严禁凭证/密码/哈希。
+          readOnly: true
+        occurredAt:
+          type: string
+          format: date-time
+          pattern: .*Z$
+          description: 服务端UTC，ISO8601 Z；SQL DATETIME(6)，微秒精度。
+          readOnly: true
+      required:
+      - auditId
+      - actorId
+      - requirementId
+      - targetType
+      - targetId
+      - action
+      - outcome
+      - beforeData
+      - afterData
+      - occurredAt
+      description: 审计只读，安全投影，排除任何密码/哈希/会话或CSRF凭证。
+    SessionResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        user:
+          $ref: '#/components/schemas/UserSummary'
+        roles:
+          type: array
+          items:
+            $ref: '#/components/schemas/RoleCode'
+          minItems: 1
+          uniqueItems: true
+      required:
+      - user
+      - roles
+    CsrfResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        headerName:
+          type: string
+          const: X-CSRF-TOKEN
+        token:
+          type: string
+          minLength: 1
+      required:
+      - headerName
+      - token
+    LoginRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        login:
+          type: string
+          maxLength: 254
+          minLength: 1
+          pattern: .*\S.*
+        password:
+          type: string
+          minLength: 1
+          pattern: .*\S.*
+          writeOnly: true
+          x-rms-max-utf8-bytes: 72
+          description: 原始Java String；不trim、不做NFC/NFKC或其他Unicode normalization。满足既有non-blank contract且按原值UTF-8编码的实际长度为1..72 bytes；超过72 bytes以400 INVALID_INPUT拒绝，不静默截断。与创建用户initialPassword使用同一服务端byte-limit validator；不得回显、记录或持久化原密码。maxLength不代表字节限制；扩展属性须由服务端显式实现。
+      required:
+      - login
+      - password
+    CreateUserRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        username:
+          type: string
+          maxLength: 64
+          minLength: 1
+          pattern: .*\S.*
+        email:
+          type: string
+          maxLength: 254
+          minLength: 1
+          pattern: .*\S.*
+          format: email
+        displayName:
+          type: string
+          maxLength: 100
+          minLength: 1
+          pattern: .*\S.*
+        initialPassword:
+          type: string
+          minLength: 1
+          pattern: .*\S.*
+          writeOnly: true
+          x-rms-max-utf8-bytes: 72
+          description: 原始Java String；不trim、不做NFC/NFKC或其他Unicode normalization。满足既有non-blank contract且按原值UTF-8编码的实际长度为1..72 bytes；超过72 bytes以400 INVALID_INPUT拒绝，不静默截断。与登录password使用同一服务端byte-limit validator；仅服务器内存处理，校验后BCrypt生成非空哈希，不保存/记录/返回原密码。maxLength不代表字节限制；扩展属性须由服务端显式实现。
+        roles:
+          type: array
+          minItems: 1
+          uniqueItems: true
+          items:
+            $ref: '#/components/schemas/RoleCode'
+      required:
+      - username
+      - email
+      - displayName
+      - initialPassword
+      - roles
+    EditUserRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        username:
+          type: string
+          maxLength: 64
+          minLength: 1
+          pattern: .*\S.*
+        email:
+          type: string
+          maxLength: 254
+          minLength: 1
+          pattern: .*\S.*
+          format: email
+        displayName:
+          type: string
+          maxLength: 100
+          minLength: 1
+          pattern: .*\S.*
+        expectedLockVersion:
+          $ref: '#/components/schemas/LockVersion'
+      required:
+      - expectedLockVersion
+      description: 至少包含一个基本资料字段；不含密码、角色或状态。
+      anyOf:
+      - required:
+        - username
+      - required:
+        - email
+      - required:
+        - displayName
+    SetRolesRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        roles:
+          type: array
+          items:
+            $ref: '#/components/schemas/RoleCode'
+          uniqueItems: true
+        expectedLockVersion:
+          $ref: '#/components/schemas/LockVersion'
+      required:
+      - roles
+      - expectedLockVersion
+      description: ENABLED账号至少保留一个角色；DISABLED是否无角色由原BR-USER-005判定，不增加永久至少一角色规则。
+    LockCommand:
+      type: object
+      additionalProperties: false
+      properties:
+        expectedLockVersion:
+          $ref: '#/components/schemas/LockVersion'
+      required:
+      - expectedLockVersion
+    CreateRequirementRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        title:
+          type: string
+          maxLength: 200
+          minLength: 1
+          pattern: .*\S.*
+        description:
+          type: string
+          minLength: 1
+          pattern: .*\S.*
+        level:
+          type: string
+          maxLength: 32
+          enum:
+          - BUSINESS
+          - USER
+          - SYSTEM
+        kind:
+          type: string
+          maxLength: 32
+          enum:
+          - FUNCTIONAL
+          - QUALITY
+          - CONSTRAINT
+        priority:
+          type: string
+          maxLength: 32
+          enum:
+          - LOW
+          - MEDIUM
+          - HIGH
+          - CRITICAL
+        source:
+          type:
+          - string
+          - 'null'
+        rationale:
+          type:
+          - string
+          - 'null'
+        acceptanceCriteria:
+          type:
+          - string
+          - 'null'
+      required:
+      - title
+      - description
+      - level
+      - kind
+      - priority
+    EditRequirementContentRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        title:
+          type: string
+          maxLength: 200
+          minLength: 1
+          pattern: .*\S.*
+        description:
+          type: string
+          minLength: 1
+          pattern: .*\S.*
+        level:
+          type: string
+          maxLength: 32
+          enum:
+          - BUSINESS
+          - USER
+          - SYSTEM
+        kind:
+          type: string
+          maxLength: 32
+          enum:
+          - FUNCTIONAL
+          - QUALITY
+          - CONSTRAINT
+        priority:
+          type: string
+          maxLength: 32
+          enum:
+          - LOW
+          - MEDIUM
+          - HIGH
+          - CRITICAL
+        source:
+          type:
+          - string
+          - 'null'
+        rationale:
+          type:
+          - string
+          - 'null'
+        acceptanceCriteria:
+          type:
+          - string
+          - 'null'
+        expectedLockVersion:
+          $ref: '#/components/schemas/LockVersion'
+      required:
+      - expectedLockVersion
+      description: 至少一个八项内容字段；仅DRAFT；提交时全部非空且验收标准可判定。PATCH省略字段不变，显式null仅允许三个可空字段。
+      anyOf:
+      - required:
+        - title
+      - required:
+        - description
+      - required:
+        - level
+      - required:
+        - kind
+      - required:
+        - priority
+      - required:
+        - source
+      - required:
+        - rationale
+      - required:
+        - acceptanceCriteria
+    EditMetadataRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        assigneeId:
+          type:
+          - string
+          - 'null'
+          pattern: ^[1-9][0-9]*$
+          maxLength: 19
+          description: SQL signed BIGINT正整数十进制字符串；服务端再校验<=9223372036854775807，避免JavaScript Number精度丢失。
+        tagIds:
+          type: array
+          items:
+            $ref: '#/components/schemas/Id'
+          uniqueItems: true
+        expectedLockVersion:
+          $ref: '#/components/schemas/LockVersion'
+      required:
+      - expectedLockVersion
+      description: 至少assigneeId或tagIds之一；省略不改，assigneeId=null清除；tagIds替换当前集合，不产生正式版本。
+      anyOf:
+      - required:
+        - assigneeId
+      - required:
+        - tagIds
+    CreateTagRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        name:
+          type: string
+          maxLength: 50
+          minLength: 1
+          pattern: .*\S.*
+        description:
+          type:
+          - string
+          - 'null'
+          maxLength: 500
+      required:
+      - name
+    EditTagRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        name:
+          type: string
+          maxLength: 50
+          minLength: 1
+          pattern: .*\S.*
+        description:
+          type:
+          - string
+          - 'null'
+          maxLength: 500
+      description: 至少一个字段；Tag无lockVersion，禁止捏造新字段。
+      anyOf:
+      - required:
+        - name
+      - required:
+        - description
+    VersionConfirmationRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        expectedVersionId:
+          $ref: '#/components/schemas/Id'
+        expectedLockVersion:
+          $ref: '#/components/schemas/LockVersion'
+        description:
+          type: string
+          minLength: 1
+          pattern: .*\S.*
+      required:
+      - expectedVersionId
+      - expectedLockVersion
+      - description
+      description: 实现/验证说明写入审计，与当前正式版本绑定，不新增实体字段。
+    RequirementDecisionRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        decision:
+          $ref: '#/components/schemas/Decision'
+        comment:
+          type:
+          - string
+          - 'null'
+        expectedRequirementLockVersion:
+          $ref: '#/components/schemas/LockVersion'
+      required:
+      - decision
+      - expectedRequirementLockVersion
+      description: REJECT或REQUEST_CHANGES必填非空comment；APPROVE可为空；reviewId指向轮次，reviewer由会话确定。
+      allOf:
+      - if:
+          properties:
+            decision:
+              enum:
+              - REJECT
+              - REQUEST_CHANGES
+          required:
+          - decision
+        then:
+          required:
+          - comment
+          properties:
+            comment:
+              type: string
+              minLength: 1
+              pattern: .*\S.*
+    ChangeDecisionRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        decision:
+          $ref: '#/components/schemas/Decision'
+        comment:
+          type:
+          - string
+          - 'null'
+        expectedChangeLockVersion:
+          $ref: '#/components/schemas/LockVersion'
+      required:
+      - decision
+      - expectedChangeLockVersion
+      description: REJECT或REQUEST_CHANGES必填comment；reviewer由会话确定，完成轮次只一次。
+      allOf:
+      - if:
+          properties:
+            decision:
+              enum:
+              - REJECT
+              - REQUEST_CHANGES
+          required:
+          - decision
+        then:
+          required:
+          - comment
+          properties:
+            comment:
+              type: string
+              minLength: 1
+              pattern: .*\S.*
+    CreateChangeRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        requestTitle:
+          type: string
+          maxLength: 200
+          minLength: 1
+          pattern: .*\S.*
+        reason:
+          type: string
+          minLength: 1
+          pattern: .*\S.*
+        expectedRequirementLockVersion:
+          $ref: '#/components/schemas/LockVersion'
+      required:
+      - requestTitle
+      - reason
+      - expectedRequirementLockVersion
+      description: 基准和八项proposed由服务端复制当前版本，不接受客户端baseVersionId。
+    EditChangeRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        requestTitle:
+          type: string
+          maxLength: 200
+        reason:
+          type: string
+        proposedTitle:
+          type: string
+          maxLength: 200
+        proposedDescription:
+          type: string
+        proposedLevel:
+          type: string
+          maxLength: 32
+          enum:
+          - BUSINESS
+          - USER
+          - SYSTEM
+        proposedKind:
+          type: string
+          maxLength: 32
+          enum:
+          - FUNCTIONAL
+          - QUALITY
+          - CONSTRAINT
+        proposedPriority:
+          type: string
+          maxLength: 32
+          enum:
+          - LOW
+          - MEDIUM
+          - HIGH
+          - CRITICAL
+        proposedSource:
+          type:
+          - string
+          - 'null'
+        proposedRationale:
+          type:
+          - string
+          - 'null'
+        proposedAcceptanceCriteria:
+          type:
+          - string
+          - 'null'
+        expectedLockVersion:
+          $ref: '#/components/schemas/LockVersion'
+      required:
+      - expectedLockVersion
+      description: 至少一个申请/建议内容字段；DRAFT编辑；提交前requestTitle/reason及八项建议全部非空。
+      anyOf:
+      - required:
+        - requestTitle
+      - required:
+        - reason
+      - required:
+        - proposedTitle
+      - required:
+        - proposedDescription
+      - required:
+        - proposedLevel
+      - required:
+        - proposedKind
+      - required:
+        - proposedPriority
+      - required:
+        - proposedSource
+      - required:
+        - proposedRationale
+      - required:
+        - proposedAcceptanceCriteria
+    ApplyChangeRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        expectedRequirementLockVersion:
+          $ref: '#/components/schemas/LockVersion'
+        expectedChangeLockVersion:
+          $ref: '#/components/schemas/LockVersion'
+      required:
+      - expectedRequirementLockVersion
+      - expectedChangeLockVersion
+      description: 服务端验证不可变baseVersion与当前版本，不接受currentVersionId/versionNo。
+    CreateRelationRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        sourceRequirementId:
+          $ref: '#/components/schemas/Id'
+        targetRequirementId:
+          $ref: '#/components/schemas/Id'
+        relationType:
+          $ref: '#/components/schemas/RelationType'
+        description:
+          type:
+          - string
+          - 'null'
+          maxLength: 1000
+        expectedSourceLockVersion:
+          $ref: '#/components/schemas/LockVersion'
+        expectedTargetLockVersion:
+          $ref: '#/components/schemas/LockVersion'
+      required:
+      - sourceRequirementId
+      - targetRequirementId
+      - relationType
+      - expectedSourceLockVersion
+      - expectedTargetLockVersion
+    CreateCommentRequest:
+      type: object
+      additionalProperties: false
+      properties:
+        content:
+          type: string
+          minLength: 1
+          pattern: .*\S.*
+      required:
+      - content
+    ApplyChangeResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        change:
+          $ref: '#/components/schemas/ChangeRequestResponse'
+        requirement:
+          $ref: '#/components/schemas/RequirementResponse'
+        version:
+          $ref: '#/components/schemas/RequirementVersionResponse'
+      required:
+      - change
+      - requirement
+      - version
+    RequirementDecisionResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        review:
+          $ref: '#/components/schemas/RequirementReviewResponse'
+        requirement:
+          $ref: '#/components/schemas/RequirementResponse'
+        version:
+          oneOf:
+          - $ref: '#/components/schemas/RequirementVersionResponse'
+          - type: 'null'
+      required:
+      - review
+      - requirement
+      - version
+    ChangeDecisionResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        review:
+          $ref: '#/components/schemas/ChangeRequestReviewResponse'
+        change:
+          $ref: '#/components/schemas/ChangeRequestResponse'
+      required:
+      - review
+      - change
+    TraceResponse:
+      type: object
+      additionalProperties: false
+      properties:
+        rootRequirementId:
+          $ref: '#/components/schemas/Id'
+        nodes:
+          type: array
+          items:
+            $ref: '#/components/schemas/RequirementResponse'
+        edges:
+          type: array
+          items:
+            $ref: '#/components/schemas/RequirementRelationResponse'
+        depth:
+          type: integer
+          minimum: 1
+        truncated:
+          type: boolean
+      required:
+      - rootRequirementId
+      - nodes
+      - edges
+      - depth
+      - truncated
+      description: 当前关系图；按visited去重，方向及类型保留；depth有限，包含被截断标识。
+    ApiError:
+      type: object
+      additionalProperties: false
+      properties:
+        code:
+          type: string
+          enum:
+          - INVALID_INPUT
+          - INCOMPLETE_CONTENT
+          - UNAUTHENTICATED
+          - INVALID_CREDENTIALS
+          - FORBIDDEN
+          - ACCOUNT_DISABLED
+          - SELF_REVIEW
+          - NOT_AUTHOR
+          - NOT_FOUND
+          - LOCK_VERSION_CONFLICT
+          - STATE_CONFLICT
+          - BASE_VERSION_STALE
+          - DUPLICATE
+          - ACTIVE_CHANGE_EXISTS
+          - ACTIVE_REVIEW_EXISTS
+          - DEPENDENCY_CYCLE
+          - GRAPH_BUSY
+          - INTERNAL_ERROR
+        message:
+          type: string
+        correlationId:
+          type: string
+        currentLockVersion:
+          $ref: '#/components/schemas/LockVersion'
+      required:
+      - code
+      - message
+      - correlationId
+      description: 安全错误，无SQL/stack/密码；currentLockVersion仅有明确受权资源的修订冲突才提供。
+    AdminUserResponsePage:
+      type: object
+      additionalProperties: false
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdminUserResponse'
+        page:
+          type: integer
+          minimum: 0
+        size:
+          type: integer
+          minimum: 1
+          maximum: 100
+        totalElements:
+          type: integer
+          minimum: 0
+      required:
+      - items
+      - page
+      - size
+      - totalElements
+    RequirementResponsePage:
+      type: object
+      additionalProperties: false
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/RequirementResponse'
+        page:
+          type: integer
+          minimum: 0
+        size:
+          type: integer
+          minimum: 1
+          maximum: 100
+        totalElements:
+          type: integer
+          minimum: 0
+      required:
+      - items
+      - page
+      - size
+      - totalElements
+    TagResponsePage:
+      type: object
+      additionalProperties: false
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/TagResponse'
+        page:
+          type: integer
+          minimum: 0
+        size:
+          type: integer
+          minimum: 1
+          maximum: 100
+        totalElements:
+          type: integer
+          minimum: 0
+      required:
+      - items
+      - page
+      - size
+      - totalElements
+    RequirementReviewResponsePage:
+      type: object
+      additionalProperties: false
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/RequirementReviewResponse'
+        page:
+          type: integer
+          minimum: 0
+        size:
+          type: integer
+          minimum: 1
+          maximum: 100
+        totalElements:
+          type: integer
+          minimum: 0
+      required:
+      - items
+      - page
+      - size
+      - totalElements
+    RequirementVersionResponsePage:
+      type: object
+      additionalProperties: false
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/RequirementVersionResponse'
+        page:
+          type: integer
+          minimum: 0
+        size:
+          type: integer
+          minimum: 1
+          maximum: 100
+        totalElements:
+          type: integer
+          minimum: 0
+      required:
+      - items
+      - page
+      - size
+      - totalElements
+    RequirementRelationResponsePage:
+      type: object
+      additionalProperties: false
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/RequirementRelationResponse'
+        page:
+          type: integer
+          minimum: 0
+        size:
+          type: integer
+          minimum: 1
+          maximum: 100
+        totalElements:
+          type: integer
+          minimum: 0
+      required:
+      - items
+      - page
+      - size
+      - totalElements
+    ChangeRequestResponsePage:
+      type: object
+      additionalProperties: false
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChangeRequestResponse'
+        page:
+          type: integer
+          minimum: 0
+        size:
+          type: integer
+          minimum: 1
+          maximum: 100
+        totalElements:
+          type: integer
+          minimum: 0
+      required:
+      - items
+      - page
+      - size
+      - totalElements
+    ChangeRequestReviewResponsePage:
+      type: object
+      additionalProperties: false
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChangeRequestReviewResponse'
+        page:
+          type: integer
+          minimum: 0
+        size:
+          type: integer
+          minimum: 1
+          maximum: 100
+        totalElements:
+          type: integer
+          minimum: 0
+      required:
+      - items
+      - page
+      - size
+      - totalElements
+    CommentResponsePage:
+      type: object
+      additionalProperties: false
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/CommentResponse'
+        page:
+          type: integer
+          minimum: 0
+        size:
+          type: integer
+          minimum: 1
+          maximum: 100
+        totalElements:
+          type: integer
+          minimum: 0
+      required:
+      - items
+      - page
+      - size
+      - totalElements
+    AuditResponsePage:
+      type: object
+      additionalProperties: false
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/AuditResponse'
+        page:
+          type: integer
+          minimum: 0
+        size:
+          type: integer
+          minimum: 1
+          maximum: 100
+        totalElements:
+          type: integer
+          minimum: 0
+      required:
+      - items
+      - page
+      - size
+      - totalElements

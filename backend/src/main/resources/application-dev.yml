@@ -1,0 +1,8 @@
+# Explicit local development only. Production retains Secure cookies.
+server:
+  address: 127.0.0.1
+  port: 18080
+  servlet:
+    session:
+      cookie:
+        secure: false

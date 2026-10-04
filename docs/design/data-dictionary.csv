@@ -1,0 +1,152 @@
+﻿entity,field,type,meaning,key,nullable,default,domain,write
+User,userId,BIGINT,系统生成的内部标识,PK,False,自增,,创建后不可变
+User,username,VARCHAR(64),登录用户名,U1,False,无,非空、唯一,管理员维护
+User,email,VARCHAR(254),登录邮箱,U2,False,无,合法邮箱、唯一,管理员维护
+User,passwordHash,VARCHAR(255),创建用户时由 initialPassword 经服务端 BCrypt 生成；永不返回客户端,,False,无,非空 BCrypt 哈希；不存明文,创建时服务端写入；资料修改不得更改
+User,displayName,VARCHAR(100),显示名称,,False,无,,管理员维护
+User,accountStatus,VARCHAR(32),账号状态,,False,ENABLED,ENABLED/DISABLED,管理员启用/禁用
+User,createdAt,DATETIME(6),服务端生成的 UTC 时间,,False,服务端时间,,创建后不可变
+User,updatedAt,DATETIME(6),服务端更新记录时间,,False,服务端时间,,服务端每次修改更新
+User,lockVersion,BIGINT,并发修订号,,False,0,>=0,每次修改递增
+Role,roleId,BIGINT,系统生成的内部标识,PK,False,自增,,创建后不可变
+Role,roleCode,VARCHAR(32),预定义角色代码,U1,False,无,ADMIN/REQUIREMENT_ENGINEER/REVIEWER/PROJECT_MEMBER/VIEWER,仅初始化
+Role,roleName,VARCHAR(100),角色名称,,False,无,,仅初始化
+Role,description,VARCHAR(500),角色职责说明,,False,无,,仅初始化
+UserRole,userId,BIGINT,被授予角色的用户,PK1/FK,False,无,User.userId,创建后不可变
+UserRole,roleId,BIGINT,被分配角色,PK1/FK,False,无,Role.roleId,创建后不可变
+UserRole,grantedBy,BIGINT,运行期授予者必须为 ADMIN；唯一 bootstrap 初始化例外自指新建管理员,FK,False,无,User.userId,创建后不可变
+UserRole,grantedAt,DATETIME(6),服务端生成的 UTC 时间,,False,服务端时间,,创建后不可变
+Requirement,requirementId,BIGINT,系统生成的内部标识,PK/FK,False,自增,,创建后不可变
+Requirement,requirementKey,VARCHAR(32),稳定且不重复的业务编号,U1,False,服务端生成,如 REQ-001,创建后不可变
+Requirement,title,VARCHAR(200),需求标题,,False,无,,草稿编辑；基线后受控变更
+Requirement,description,TEXT,精确且无歧义的需求陈述,,False,无,,草稿编辑；基线后受控变更
+Requirement,level,VARCHAR(32),需求抽象层级,,False,无,BUSINESS/USER/SYSTEM,草稿编辑；基线后受控变更
+Requirement,kind,VARCHAR(32),需求性质,,False,无,FUNCTIONAL/QUALITY/CONSTRAINT,草稿编辑；基线后受控变更
+Requirement,priority,VARCHAR(32),需求优先级,,False,无,LOW/MEDIUM/HIGH/CRITICAL,草稿编辑；基线后受控变更
+Requirement,source,TEXT,来源或提出者的可追踪说明,,True,NULL,,草稿编辑；提交时必填
+Requirement,rationale,TEXT,需求存在的理由及业务价值,,True,NULL,,草稿编辑；提交时必填
+Requirement,acceptanceCriteria,TEXT,可观察、可判定的验收标准,,True,NULL,,草稿编辑；提交时必填
+Requirement,status,VARCHAR(32),当前生命周期,,False,DRAFT,DRAFT/UNDER_REVIEW/APPROVED/REJECTED/IMPLEMENTED/VERIFIED,受控业务动作
+Requirement,creatorId,BIGINT,需求创建者,FK,False,无,User.userId,创建后不可变
+Requirement,assigneeId,BIGINT,当前负责人；设置时须为启用用户,FK,True,NULL,User.userId,需求工程师修改
+Requirement,currentVersionId,BIGINT,当前正式版本指针,FK,True,NULL,属于本需求的版本,首次批准或应用变更
+Requirement,firstSubmittedAt,DATETIME(6),首次提交时间；退回后仍保留,,True,NULL,,对应业务动作首次写入；之后不可变
+Requirement,isWithdrawn,TINYINT,草稿是否已撤销,,False,0,0/1,满足撤销条件后置 1
+Requirement,withdrawnBy,BIGINT,撤销操作人,FK,True,NULL,User.userId,撤销动作写入
+Requirement,withdrawnAt,DATETIME(6),撤销时间,,True,NULL,,对应业务动作首次写入；之后不可变
+Requirement,createdAt,DATETIME(6),服务端生成的 UTC 时间,,False,服务端时间,,创建后不可变
+Requirement,updatedAt,DATETIME(6),服务端更新记录时间,,False,服务端时间,,服务端每次修改更新
+Requirement,lockVersion,BIGINT,需求聚合并发修订号,,False,0,>=0,每次修改递增
+RequirementVersion,versionId,BIGINT,系统生成的内部标识,PK/U2,False,自增,,创建后不可变
+RequirementVersion,requirementId,BIGINT,所属需求,FK/U1/U2,False,无,Requirement.requirementId,创建后不可变
+RequirementVersion,versionNo,INT,需求内部连续版本号,U1,False,无,>=1,创建后不可变
+RequirementVersion,title,VARCHAR(200),快照：需求标题,,False,无,,完整快照；创建后不可变
+RequirementVersion,description,TEXT,快照：精确且无歧义的需求陈述,,False,无,,完整快照；创建后不可变
+RequirementVersion,level,VARCHAR(32),快照：需求抽象层级,,False,无,BUSINESS/USER/SYSTEM,完整快照；创建后不可变
+RequirementVersion,kind,VARCHAR(32),快照：需求性质,,False,无,FUNCTIONAL/QUALITY/CONSTRAINT,完整快照；创建后不可变
+RequirementVersion,priority,VARCHAR(32),快照：需求优先级,,False,无,LOW/MEDIUM/HIGH/CRITICAL,完整快照；创建后不可变
+RequirementVersion,source,TEXT,快照：来源或提出者的可追踪说明,,False,无,,完整快照；创建后不可变
+RequirementVersion,rationale,TEXT,快照：需求存在的理由及业务价值,,False,无,,完整快照；创建后不可变
+RequirementVersion,acceptanceCriteria,TEXT,快照：可观察、可判定的验收标准,,False,无,,完整快照；创建后不可变
+RequirementVersion,initialReviewId,BIGINT,V1 的批准评审来源,FK/U3,True,NULL,同需求 RequirementReview,创建后不可变
+RequirementVersion,appliedChangeRequestId,BIGINT,后续版本的变更来源,FK/U4,True,NULL,同需求 ChangeRequest,创建后不可变
+RequirementVersion,createdBy,BIGINT,V1 为批准者；后续版本为应用者,FK,False,无,User.userId,创建后不可变
+RequirementVersion,createdAt,DATETIME(6),服务端生成的 UTC 时间,,False,服务端时间,,创建后不可变
+RequirementVersion,changeReason,TEXT,V1 为首次批准；后续采用变更理由,,False,无,,创建后不可变
+RequirementReview,reviewId,BIGINT,系统生成的内部标识,PK/U2,False,自增,,创建后不可变
+RequirementReview,requirementId,BIGINT,被评审需求,FK/U1/U2,False,无,Requirement.requirementId,创建后不可变
+RequirementReview,roundNo,INT,该需求的评审轮次,U1,False,无,>=1,创建后不可变
+RequirementReview,snapshotTitle,VARCHAR(200),快照：需求标题,,False,无,,完整快照；创建后不可变
+RequirementReview,snapshotDescription,TEXT,快照：精确且无歧义的需求陈述,,False,无,,完整快照；创建后不可变
+RequirementReview,snapshotLevel,VARCHAR(32),快照：需求抽象层级,,False,无,BUSINESS/USER/SYSTEM,完整快照；创建后不可变
+RequirementReview,snapshotKind,VARCHAR(32),快照：需求性质,,False,无,FUNCTIONAL/QUALITY/CONSTRAINT,完整快照；创建后不可变
+RequirementReview,snapshotPriority,VARCHAR(32),快照：需求优先级,,False,无,LOW/MEDIUM/HIGH/CRITICAL,完整快照；创建后不可变
+RequirementReview,snapshotSource,TEXT,快照：来源或提出者的可追踪说明,,False,无,,完整快照；创建后不可变
+RequirementReview,snapshotRationale,TEXT,快照：需求存在的理由及业务价值,,False,无,,完整快照；创建后不可变
+RequirementReview,snapshotAcceptanceCriteria,TEXT,快照：可观察、可判定的验收标准,,False,无,,完整快照；创建后不可变
+RequirementReview,submittedBy,BIGINT,该轮提交者,FK,False,无,User.userId,创建后不可变
+RequirementReview,submittedAt,DATETIME(6),服务端生成的 UTC 时间,,False,服务端时间,,创建后不可变
+RequirementReview,reviewStatus,VARCHAR(32),该轮状态,,False,PENDING,PENDING/COMPLETED,受控业务动作
+RequirementReview,reviewerId,BIGINT,作出决策的评审者；待处理时为空,FK,True,NULL,User.userId,决策时写入一次
+RequirementReview,decision,VARCHAR(32),评审决策,,True,NULL,APPROVE/REJECT/REQUEST_CHANGES,完成时写入一次
+RequirementReview,comment,TEXT,拒绝及退回时必填的意见,,True,NULL,,完成时写入一次
+RequirementReview,decidedAt,DATETIME(6),评审完成时间,,True,NULL,,对应业务动作首次写入；之后不可变
+RequirementReview,activeRequirementId,BIGINT,进行中评审的条件唯一键,生成/U3,True,计算值,PENDING 时=requirementId；否则 NULL,不可写
+ChangeRequest,changeRequestId,BIGINT,系统生成的内部标识,PK/U1,False,自增,,创建后不可变
+ChangeRequest,requirementId,BIGINT,变更目标需求,FK/U1,False,无,Requirement.requirementId,创建后不可变
+ChangeRequest,baseVersionId,BIGINT,创建时的正式基准版本,FK,False,无,同需求 RequirementVersion,创建后不可变
+ChangeRequest,requestTitle,VARCHAR(200),变更申请的概括标题,,False,无,,仅草稿可编辑
+ChangeRequest,reason,TEXT,变更的必要性及影响说明,,False,无,,仅草稿可编辑
+ChangeRequest,proposedTitle,VARCHAR(200),建议需求标题,,False,无,,仅变更草稿可编辑；提交后锁定
+ChangeRequest,proposedDescription,TEXT,建议精确且无歧义的需求陈述,,False,无,,仅变更草稿可编辑；提交后锁定
+ChangeRequest,proposedLevel,VARCHAR(32),建议需求抽象层级,,False,无,BUSINESS/USER/SYSTEM,仅变更草稿可编辑；提交后锁定
+ChangeRequest,proposedKind,VARCHAR(32),建议需求性质,,False,无,FUNCTIONAL/QUALITY/CONSTRAINT,仅变更草稿可编辑；提交后锁定
+ChangeRequest,proposedPriority,VARCHAR(32),建议需求优先级,,False,无,LOW/MEDIUM/HIGH/CRITICAL,仅变更草稿可编辑；提交后锁定
+ChangeRequest,proposedSource,TEXT,建议来源或提出者的可追踪说明,,True,NULL,,仅变更草稿可编辑；提交后锁定
+ChangeRequest,proposedRationale,TEXT,建议需求存在的理由及业务价值,,True,NULL,,仅变更草稿可编辑；提交后锁定
+ChangeRequest,proposedAcceptanceCriteria,TEXT,建议可观察、可判定的验收标准,,True,NULL,,仅变更草稿可编辑；提交后锁定
+ChangeRequest,status,VARCHAR(32),变更生命周期,,False,DRAFT,DRAFT/UNDER_REVIEW/APPROVED/REJECTED/APPLIED/CANCELLED,受控业务动作
+ChangeRequest,createdBy,BIGINT,变更提出者,FK,False,无,User.userId,创建后不可变
+ChangeRequest,createdAt,DATETIME(6),服务端生成的 UTC 时间,,False,服务端时间,,创建后不可变
+ChangeRequest,updatedAt,DATETIME(6),服务端更新记录时间,,False,服务端时间,,服务端每次修改更新
+ChangeRequest,appliedBy,BIGINT,应用批准变更的需求工程师,FK,True,NULL,User.userId,应用成功写入
+ChangeRequest,appliedAt,DATETIME(6),应用完成时间,,True,NULL,,对应业务动作首次写入；之后不可变
+ChangeRequest,lockVersion,BIGINT,变更聚合并发修订号,,False,0,>=0,每次修改递增
+ChangeRequest,activeRequirementId,BIGINT,活动变更的条件唯一键,生成/U2,True,计算值,DRAFT/UNDER_REVIEW/APPROVED 时=requirementId；否则 NULL,不可写
+ChangeRequestReview,changeReviewId,BIGINT,系统生成的内部标识,PK,False,自增,,创建后不可变
+ChangeRequestReview,requirementId,BIGINT,用于约束目标需求一致性的上下文,FK,False,无,同需求 ChangeRequest,创建后不可变
+ChangeRequestReview,changeRequestId,BIGINT,被评审变更请求,FK/U1,False,无,ChangeRequest.changeRequestId,创建后不可变
+ChangeRequestReview,roundNo,INT,该变更请求的评审轮次,U1,False,无,>=1,创建后不可变
+ChangeRequestReview,snapshotBaseVersionId,BIGINT,该轮提交事务中逐值复制 ChangeRequest.baseVersionId；必须等于提交瞬间的对应值,FK,False,无,同需求 RequirementVersion,Service 从对应 CR 复制；创建后不可变
+ChangeRequestReview,snapshotRequestTitle,VARCHAR(200),该轮提交事务中逐值复制 ChangeRequest.requestTitle；必须等于提交瞬间的对应值,,False,无,,Service 从对应 CR 复制；创建后不可变
+ChangeRequestReview,snapshotReason,TEXT,该轮提交事务中逐值复制 ChangeRequest.reason；必须等于提交瞬间的对应值,,False,无,,Service 从对应 CR 复制；创建后不可变
+ChangeRequestReview,snapshotProposedTitle,VARCHAR(200),该轮提交事务中逐值复制 ChangeRequest.proposedTitle；必须等于提交瞬间的对应值,,False,无,,Service 从对应 CR 复制；创建后不可变
+ChangeRequestReview,snapshotProposedDescription,TEXT,该轮提交事务中逐值复制 ChangeRequest.proposedDescription；必须等于提交瞬间的对应值,,False,无,,Service 从对应 CR 复制；创建后不可变
+ChangeRequestReview,snapshotProposedLevel,VARCHAR(32),该轮提交事务中逐值复制 ChangeRequest.proposedLevel；必须等于提交瞬间的对应值,,False,无,BUSINESS/USER/SYSTEM,Service 从对应 CR 复制；创建后不可变
+ChangeRequestReview,snapshotProposedKind,VARCHAR(32),该轮提交事务中逐值复制 ChangeRequest.proposedKind；必须等于提交瞬间的对应值,,False,无,FUNCTIONAL/QUALITY/CONSTRAINT,Service 从对应 CR 复制；创建后不可变
+ChangeRequestReview,snapshotProposedPriority,VARCHAR(32),该轮提交事务中逐值复制 ChangeRequest.proposedPriority；必须等于提交瞬间的对应值,,False,无,LOW/MEDIUM/HIGH/CRITICAL,Service 从对应 CR 复制；创建后不可变
+ChangeRequestReview,snapshotProposedSource,TEXT,该轮提交事务中逐值复制 ChangeRequest.proposedSource；必须等于提交瞬间的对应值,,False,无,,Service 从对应 CR 复制；创建后不可变
+ChangeRequestReview,snapshotProposedRationale,TEXT,该轮提交事务中逐值复制 ChangeRequest.proposedRationale；必须等于提交瞬间的对应值,,False,无,,Service 从对应 CR 复制；创建后不可变
+ChangeRequestReview,snapshotProposedAcceptanceCriteria,TEXT,该轮提交事务中逐值复制 ChangeRequest.proposedAcceptanceCriteria；必须等于提交瞬间的对应值,,False,无,,Service 从对应 CR 复制；创建后不可变
+ChangeRequestReview,submittedBy,BIGINT,该轮提交者,FK,False,无,User.userId,创建后不可变
+ChangeRequestReview,submittedAt,DATETIME(6),服务端生成的 UTC 时间,,False,服务端时间,,创建后不可变
+ChangeRequestReview,reviewStatus,VARCHAR(32),该轮状态,,False,PENDING,PENDING/COMPLETED,受控业务动作
+ChangeRequestReview,reviewerId,BIGINT,作出决策的评审者；待处理时为空,FK,True,NULL,User.userId,决策时写入一次
+ChangeRequestReview,decision,VARCHAR(32),评审决策,,True,NULL,APPROVE/REJECT/REQUEST_CHANGES,完成时写入一次
+ChangeRequestReview,comment,TEXT,拒绝及退回时必填的意见,,True,NULL,,完成时写入一次
+ChangeRequestReview,decidedAt,DATETIME(6),评审完成时间,,True,NULL,,对应业务动作首次写入；之后不可变
+ChangeRequestReview,activeChangeRequestId,BIGINT,进行中变更评审的条件唯一键,生成/U2,True,计算值,PENDING 时=changeRequestId；否则 NULL,不可写
+RequirementRelation,relationId,BIGINT,系统生成的内部标识,PK,False,自增,,创建后不可变
+RequirementRelation,sourceRequirementId,BIGINT,关系源端需求,FK/U1,False,无,Requirement.requirementId,创建后不可变
+RequirementRelation,targetRequirementId,BIGINT,关系目标端需求,FK/U1,False,无,Requirement.requirementId,创建后不可变
+RequirementRelation,relationType,VARCHAR(32),语义关系类型,U1,False,无,DEPENDS_ON/REFINES/DERIVED_FROM/CONFLICTS_WITH/DUPLICATES/RELATES_TO,创建后不可变；调整时解除后重建
+RequirementRelation,description,VARCHAR(1000),建立关系的说明,,True,NULL,,创建后不可变
+RequirementRelation,createdBy,BIGINT,关系建立者,FK,False,无,User.userId,创建后不可变
+RequirementRelation,createdAt,DATETIME(6),服务端生成的 UTC 时间,,False,服务端时间,,创建后不可变
+Tag,tagId,BIGINT,系统生成的内部标识,PK,False,自增,,创建后不可变
+Tag,name,VARCHAR(50),规范化标签名称,U1,False,无,去首尾空白；系统内唯一,需求工程师创建/维护
+Tag,description,VARCHAR(500),标签含义,,True,NULL,,需求工程师维护
+Tag,createdBy,BIGINT,标签创建者,FK,False,无,User.userId,创建后不可变
+Tag,createdAt,DATETIME(6),服务端生成的 UTC 时间,,False,服务端时间,,创建后不可变
+RequirementTag,requirementId,BIGINT,被标注需求,PK1/FK,False,无,Requirement.requirementId,创建后不可变
+RequirementTag,tagId,BIGINT,所用标签,PK1/FK,False,无,Tag.tagId,创建后不可变
+RequirementTag,addedBy,BIGINT,添加标签的需求工程师,FK,False,无,User.userId,创建后不可变
+RequirementTag,addedAt,DATETIME(6),服务端生成的 UTC 时间,,False,服务端时间,,创建后不可变
+Comment,commentId,BIGINT,系统生成的内部标识,PK,False,自增,,创建后不可变
+Comment,requirementId,BIGINT,评论所属需求,FK,False,无,Requirement.requirementId,创建后不可变
+Comment,authorId,BIGINT,评论作者,FK,False,无,User.userId,创建后不可变
+Comment,content,TEXT,评论正文；逻辑删除后仍保留,,False,无,,创建后不可变
+Comment,createdAt,DATETIME(6),服务端生成的 UTC 时间,,False,服务端时间,,创建后不可变
+Comment,isDeleted,TINYINT,是否已逻辑删除,,False,0,0/1,作者删除动作
+Comment,deletedBy,BIGINT,必须与作者相同,FK,True,NULL,User.userId,删除动作写入
+Comment,deletedAt,DATETIME(6),逻辑删除时间,,True,NULL,,对应业务动作首次写入；之后不可变
+AuditEvent,auditId,BIGINT,系统生成的内部标识,PK,False,自增,,创建后不可变
+AuditEvent,actorId,BIGINT,从认证会话取得的操作人,FK,False,无,User.userId,创建后不可变
+AuditEvent,requirementId,BIGINT,可选需求上下文；非需求操作为空,FK,True,NULL,Requirement.requirementId,创建后不可变
+AuditEvent,targetType,VARCHAR(32),业务目标类型,,False,无,USER/ROLE_ASSIGNMENT/REQUIREMENT/REVIEW/VERSION/RELATION/CHANGE_REQUEST/CHANGE_REVIEW/TAG_ASSIGNMENT/TAG/COMMENT,创建后不可变
+AuditEvent,targetId,VARCHAR(128),目标的稳定标识；复合键可用规范化文本,,False,无,逻辑定位，不是外键,创建后不可变
+AuditEvent,action,VARCHAR(64),操作代码，例如 CR_APPLIED,,False,无,,创建后不可变
+AuditEvent,outcome,VARCHAR(32),操作结果,,False,SUCCESS,SUCCESS/DENIED/FAILED,创建后不可变
+AuditEvent,beforeData,JSON,操作前值；可含版本上下文,,True,NULL,,创建后不可变
+AuditEvent,afterData,JSON,操作后值；不保存密码等凭证,,True,NULL,,创建后不可变
+AuditEvent,occurredAt,DATETIME(6),服务端生成的 UTC 时间,,False,服务端时间,,创建后不可变

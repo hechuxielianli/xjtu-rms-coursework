@@ -1,0 +1,35 @@
+spring:
+  application:
+    name: rms
+  datasource:
+    url: ${RMS_DB_URL:}
+    username: ${RMS_DB_USERNAME:}
+    password: ${RMS_DB_PASSWORD:}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        connection:
+          handling_mode: DELAYED_ACQUISITION_AND_HOLD
+        jdbc:
+          time_zone: UTC
+        physical_naming_strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+  flyway:
+    locations: classpath:db/migration
+server:
+  error:
+    include-message: never
+    include-stacktrace: never
+    include-binding-errors: never
+  servlet:
+    session:
+      cookie:
+        http-only: true
+        secure: true
+        same-site: lax
+logging:
+  level:
+    org.hibernate.orm.jdbc.bind: OFF
+    org.hibernate.engine.jdbc.spi.SqlExceptionHelper: OFF

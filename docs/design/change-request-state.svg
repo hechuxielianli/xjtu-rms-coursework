@@ -1,0 +1,254 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<!-- 由 Microsoft Visio, SVG Export 生成 change_request_state.svg change_request_state -->
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:ev="http://www.w3.org/2001/xml-events"
+		xmlns:v="http://schemas.microsoft.com/visio/2003/SVGExtensions/" width="16.5354in" height="11.6929in"
+		viewBox="0 0 1190.55 841.89" xml:space="preserve" color-interpolation-filters="sRGB" class="st12">
+	<v:documentProperties v:langID="2052" v:metric="true" v:viewMarkup="false"/>
+
+	<style type="text/css">
+	<![CDATA[
+		.st1 {fill:none;stroke:none;stroke-linecap:round;stroke-linejoin:round;stroke-width:0.7}
+		.st2 {fill:#282f39;font-family:微软雅黑;font-size:1.99999em}
+		.st3 {fill:#282f39;font-family:微软雅黑;font-size:1.00001em}
+		.st4 {marker-end:url(#mrkr13-12);stroke:#4e555f;stroke-linecap:round;stroke-linejoin:round;stroke-width:1.1}
+		.st5 {fill:#4e555f;fill-opacity:1;stroke:#4e555f;stroke-opacity:1;stroke-width:0.30386740331492}
+		.st6 {marker-end:url(#mrkr13-23);stroke:#315d86;stroke-linecap:round;stroke-linejoin:round;stroke-width:1.1}
+		.st7 {fill:#315d86;fill-opacity:1;stroke:#315d86;stroke-opacity:1;stroke-width:0.30386740331492}
+		.st8 {marker-end:url(#mrkr13-29);stroke:#4e555f;stroke-linecap:round;stroke-linejoin:round;stroke-width:1.1}
+		.st9 {fill:#f8fafd;stroke:#3e556f;stroke-linecap:round;stroke-linejoin:round;stroke-width:1}
+		.st10 {fill:#282f39;font-family:微软雅黑;font-size:1.5em}
+		.st11 {fill:#282f39;font-family:微软雅黑;font-size:1.58334em}
+		.st12 {fill:none;fill-rule:evenodd;font-size:12px;overflow:visible;stroke-linecap:square;stroke-miterlimit:3}
+	]]>
+	</style>
+
+	<defs id="Markers">
+		<g id="lend13">
+			<path d="M 3 1 L 0 0 L 3 -1 L 3 1 " style="stroke:none"/>
+		</g>
+		<marker id="mrkr13-12" class="st5" v:arrowType="13" v:arrowSize="2" v:setback="9.87273" refX="-9.8727272727273"
+				orient="auto" markerUnits="strokeWidth" overflow="visible">
+			<use xlink:href="#lend13" transform="scale(-3.2909090909091,-3.2909090909091) "/>
+		</marker>
+		<marker id="mrkr13-23" class="st7" v:arrowType="13" v:arrowSize="2" v:setback="9.87273" refX="-9.8727272727273"
+				orient="auto" markerUnits="strokeWidth" overflow="visible">
+			<use xlink:href="#lend13" transform="scale(-3.2909090909091,-3.2909090909091) "/>
+		</marker>
+		<marker id="mrkr13-29" class="st5" v:arrowType="13" v:arrowSize="2" v:setback="9.54545" refX="-9.5454545454545"
+				orient="auto" markerUnits="strokeWidth" overflow="visible">
+			<use xlink:href="#lend13" transform="scale(-3.2909090909091,-3.2909090909091) "/>
+		</marker>
+	</defs>
+	<g v:mID="9" v:index="7" v:groupContext="foregroundPage">
+		<title>change_request_state</title>
+		<v:pageProperties v:drawingScale="0.0393701" v:pageScale="0.0393701" v:drawingUnits="24" v:shadowOffsetX="8.50394"
+				v:shadowOffsetY="-8.50394"/>
+		<g id="shape1-1" v:mID="1" v:groupContext="shape" transform="translate(24,-788.89)">
+			<title>PageTitle</title>
+			<desc>变更请求状态批准与应用分开拒绝和取消保留历史</desc>
+			<v:textBlock v:margins="rect(0,0,0,0)" v:tabSpace="42.5197"/>
+			<v:textRect cx="571.276" cy="824.39" width="1142.56" height="35"/>
+			<rect x="0" y="806.89" width="1142.55" height="35" class="st1"/>
+			<text x="0" y="831.59" class="st2" v:langID="2052"><v:paragraph/><v:tabList/>变更请求状态：批准与应用分开，拒绝和取消保留历史</text>		</g>
+		<g id="shape2-4" v:mID="2" v:groupContext="shape" transform="translate(24,-2.89)">
+			<title>PageLegend</title>
+			<desc>只有显式应用才产生新正式版本已应用、已拒绝和已取消均为终态。每次提交创建独立的评审轮次及完整快照。</desc>
+			<v:textBlock v:margins="rect(0,0,0,0)" v:tabSpace="42.5197"/>
+			<v:textRect cx="571.276" cy="832.89" width="1142.56" height="18"/>
+			<rect x="0" y="823.89" width="1142.55" height="18" class="st1"/>
+			<text x="0" y="836.49" class="st3" v:langID="2052"><v:paragraph/><v:tabList/>只有显式应用才产生新正式版本；已应用、已拒绝和已取消均为终态。每次提交创建独立的评审轮次及完整快照。</text>		</g>
+		<g id="shape3-7" v:mID="3" v:groupContext="shape" transform="translate(220,-574.89)">
+			<title>工作表.3</title>
+			<path d="M0 841.89 L114.14 841.89" class="st4"/>
+		</g>
+		<g id="shape4-13" v:mID="4" v:groupContext="shape" transform="translate(525,-574.89)">
+			<title>工作表.4</title>
+			<path d="M0 841.89 L114.14 841.89" class="st4"/>
+		</g>
+		<g id="shape5-18" v:mID="5" v:groupContext="shape" transform="translate(830,-574.89)">
+			<title>工作表.5</title>
+			<path d="M0 841.89 L114.14 841.89" class="st6"/>
+		</g>
+		<g id="shape6-24" v:mID="6" v:groupContext="shape" transform="translate(435,981.89) rotate(180)">
+			<title>工作表.6</title>
+			<path d="M0 761.89 L0 841.89 L305 841.89 L305 761.89 L305 761.89" class="st8"/>
+		</g>
+		<g id="shape7-30" v:mID="7" v:groupContext="shape" transform="translate(971.89,314) rotate(90)">
+			<title>工作表.7</title>
+			<path d="M0 841.89 L205.14 841.89" class="st4"/>
+		</g>
+		<g id="shape8-35" v:mID="8" v:groupContext="shape" transform="translate(1276.89,314) rotate(90)">
+			<title>工作表.8</title>
+			<path d="M0 841.89 L205.14 841.89" class="st4"/>
+		</g>
+		<g id="group12-40" transform="translate(40,-527.89)" v:mID="12" v:groupContext="group">
+			<title>DRAFT</title>
+			<g id="shape9-41" v:mID="9" v:groupContext="shape">
+				<title>工作表.9</title>
+				<rect x="0" y="747.89" width="180" height="94" class="st9"/>
+			</g>
+			<g id="shape10-43" v:mID="10" v:groupContext="shape" transform="translate(6,-44)">
+				<title>工作表.10</title>
+				<desc>草稿</desc>
+				<v:textBlock v:margins="rect(0,0,0,0)" v:tabSpace="42.5197"/>
+				<v:textRect cx="84" cy="826.89" width="168.01" height="30"/>
+				<rect x="0" y="811.89" width="168" height="30" class="st1"/>
+				<text x="60" y="834.09" class="st2" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>草稿</text>			</g>
+			<g id="shape11-46" v:mID="11" v:groupContext="shape" transform="translate(6,-20)">
+				<title>工作表.11</title>
+				<desc>DRAFT</desc>
+				<v:textBlock v:margins="rect(0,0,0,0)" v:tabSpace="42.5197"/>
+				<v:textRect cx="84" cy="829.89" width="168.01" height="24"/>
+				<rect x="0" y="817.89" width="168" height="24" class="st1"/>
+				<text x="55" y="835.29" class="st10" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>DRAFT</text>			</g>
+		</g>
+		<g id="group16-49" transform="translate(345,-527.89)" v:mID="16" v:groupContext="group">
+			<title>UNDER_REVIEW</title>
+			<g id="shape13-50" v:mID="13" v:groupContext="shape">
+				<title>工作表.13</title>
+				<rect x="0" y="747.89" width="180" height="94" class="st9"/>
+			</g>
+			<g id="shape14-52" v:mID="14" v:groupContext="shape" transform="translate(6,-44)">
+				<title>工作表.14</title>
+				<desc>待评审</desc>
+				<v:textBlock v:margins="rect(0,0,0,0)" v:tabSpace="42.5197"/>
+				<v:textRect cx="84" cy="826.89" width="168" height="30"/>
+				<rect x="0" y="811.89" width="168" height="30" class="st1"/>
+				<text x="48" y="834.09" class="st2" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>待评审</text>			</g>
+			<g id="shape15-55" v:mID="15" v:groupContext="shape" transform="translate(6,-20)">
+				<title>工作表.15</title>
+				<desc>UNDER_REVIEW</desc>
+				<v:textBlock v:margins="rect(0,0,0,0)" v:tabSpace="42.5197"/>
+				<v:textRect cx="84" cy="829.89" width="168" height="24"/>
+				<rect x="0" y="817.89" width="168" height="24" class="st1"/>
+				<text x="14.59" y="835.29" class="st10" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>UNDER_REVIEW</text>			</g>
+		</g>
+		<g id="group20-58" transform="translate(650,-527.89)" v:mID="20" v:groupContext="group">
+			<title>APPROVED</title>
+			<g id="shape17-59" v:mID="17" v:groupContext="shape">
+				<title>工作表.17</title>
+				<rect x="0" y="747.89" width="180" height="94" class="st9"/>
+			</g>
+			<g id="shape18-61" v:mID="18" v:groupContext="shape" transform="translate(6,-44)">
+				<title>工作表.18</title>
+				<desc>已批准</desc>
+				<v:textBlock v:margins="rect(0,0,0,0)" v:tabSpace="42.5197"/>
+				<v:textRect cx="84" cy="826.89" width="168.01" height="30"/>
+				<rect x="0" y="811.89" width="168" height="30" class="st1"/>
+				<text x="48" y="834.09" class="st2" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>已批准</text>			</g>
+			<g id="shape19-64" v:mID="19" v:groupContext="shape" transform="translate(6,-20)">
+				<title>工作表.19</title>
+				<desc>APPROVED</desc>
+				<v:textBlock v:margins="rect(0,0,0,0)" v:tabSpace="42.5197"/>
+				<v:textRect cx="84" cy="829.89" width="168.01" height="24"/>
+				<rect x="0" y="817.89" width="168" height="24" class="st1"/>
+				<text x="35.55" y="835.29" class="st10" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>APPROVED</text>			</g>
+		</g>
+		<g id="group24-67" transform="translate(955,-527.89)" v:mID="24" v:groupContext="group">
+			<title>APPLIED</title>
+			<g id="shape21-68" v:mID="21" v:groupContext="shape">
+				<title>工作表.21</title>
+				<rect x="0" y="747.89" width="180" height="94" class="st9"/>
+			</g>
+			<g id="shape22-70" v:mID="22" v:groupContext="shape" transform="translate(6,-44)">
+				<title>工作表.22</title>
+				<desc>已应用</desc>
+				<v:textBlock v:margins="rect(0,0,0,0)" v:tabSpace="42.5197"/>
+				<v:textRect cx="84" cy="826.89" width="168.01" height="30"/>
+				<rect x="0" y="811.89" width="168" height="30" class="st1"/>
+				<text x="48" y="834.09" class="st2" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>已应用</text>			</g>
+			<g id="shape23-73" v:mID="23" v:groupContext="shape" transform="translate(6,-20)">
+				<title>工作表.23</title>
+				<desc>APPLIED</desc>
+				<v:textBlock v:margins="rect(0,0,0,0)" v:tabSpace="42.5197"/>
+				<v:textRect cx="84" cy="829.89" width="168.01" height="24"/>
+				<rect x="0" y="817.89" width="168" height="24" class="st1"/>
+				<text x="47.59" y="835.29" class="st10" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>APPLIED</text>			</g>
+		</g>
+		<g id="group28-76" transform="translate(40,-217.89)" v:mID="28" v:groupContext="group">
+			<title>CANCELLED</title>
+			<g id="shape25-77" v:mID="25" v:groupContext="shape">
+				<title>工作表.25</title>
+				<rect x="0" y="747.89" width="180" height="94" class="st9"/>
+			</g>
+			<g id="shape26-79" v:mID="26" v:groupContext="shape" transform="translate(6,-44)">
+				<title>工作表.26</title>
+				<desc>已取消</desc>
+				<v:textBlock v:margins="rect(0,0,0,0)" v:tabSpace="42.5197"/>
+				<v:textRect cx="84" cy="826.89" width="168.01" height="30"/>
+				<rect x="0" y="811.89" width="168" height="30" class="st1"/>
+				<text x="48" y="834.09" class="st2" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>已取消</text>			</g>
+			<g id="shape27-82" v:mID="27" v:groupContext="shape" transform="translate(6,-20)">
+				<title>工作表.27</title>
+				<desc>CANCELLED</desc>
+				<v:textBlock v:margins="rect(0,0,0,0)" v:tabSpace="42.5197"/>
+				<v:textRect cx="84" cy="829.89" width="168.01" height="24"/>
+				<rect x="0" y="817.89" width="168" height="24" class="st1"/>
+				<text x="32.32" y="835.29" class="st10" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>CANCELLED</text>			</g>
+		</g>
+		<g id="group32-85" transform="translate(345,-217.89)" v:mID="32" v:groupContext="group">
+			<title>REJECTED</title>
+			<g id="shape29-86" v:mID="29" v:groupContext="shape">
+				<title>工作表.29</title>
+				<rect x="0" y="747.89" width="180" height="94" class="st9"/>
+			</g>
+			<g id="shape30-88" v:mID="30" v:groupContext="shape" transform="translate(6,-44)">
+				<title>工作表.30</title>
+				<desc>已拒绝</desc>
+				<v:textBlock v:margins="rect(0,0,0,0)" v:tabSpace="42.5197"/>
+				<v:textRect cx="84" cy="826.89" width="168" height="30"/>
+				<rect x="0" y="811.89" width="168" height="30" class="st1"/>
+				<text x="48" y="834.09" class="st2" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>已拒绝</text>			</g>
+			<g id="shape31-91" v:mID="31" v:groupContext="shape" transform="translate(6,-20)">
+				<title>工作表.31</title>
+				<desc>REJECTED</desc>
+				<v:textBlock v:margins="rect(0,0,0,0)" v:tabSpace="42.5197"/>
+				<v:textRect cx="84" cy="829.89" width="168" height="24"/>
+				<rect x="0" y="817.89" width="168" height="24" class="st1"/>
+				<text x="41.68" y="835.29" class="st10" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>REJECTED</text>			</g>
+		</g>
+		<g id="shape33-94" v:mID="33" v:groupContext="shape" transform="translate(192,-588.89)">
+			<title>工作表.33</title>
+			<desc>提交</desc>
+			<v:textBlock v:margins="rect(0,0,0,0)" v:tabSpace="42.5197"/>
+			<v:textRect cx="90" cy="828.89" width="180" height="26"/>
+			<rect x="0" y="815.89" width="180" height="26" class="st1"/>
+			<text x="71" y="834.59" class="st11" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>提交</text>		</g>
+		<g id="shape34-97" v:mID="34" v:groupContext="shape" transform="translate(497,-588.89)">
+			<title>工作表.34</title>
+			<desc>批准</desc>
+			<v:textBlock v:margins="rect(0,0,0,0)" v:tabSpace="42.5197"/>
+			<v:textRect cx="90" cy="828.89" width="180" height="26"/>
+			<rect x="0" y="815.89" width="180" height="26" class="st1"/>
+			<text x="71" y="834.59" class="st11" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>批准</text>		</g>
+		<g id="shape35-100" v:mID="35" v:groupContext="shape" transform="translate(802,-588.89)">
+			<title>工作表.35</title>
+			<desc>显式应用</desc>
+			<v:textBlock v:margins="rect(0,0,0,0)" v:tabSpace="42.5197"/>
+			<v:textRect cx="90" cy="828.89" width="180" height="26"/>
+			<rect x="0" y="815.89" width="180" height="26" class="st1"/>
+			<text x="52" y="834.59" class="st11" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>显式应用</text>		</g>
+		<g id="shape36-103" v:mID="36" v:groupContext="shape" transform="translate(192,-707.89)">
+			<title>工作表.36</title>
+			<desc>要求修改</desc>
+			<v:textBlock v:margins="rect(0,0,0,0)" v:tabSpace="42.5197"/>
+			<v:textRect cx="90" cy="828.89" width="180" height="26"/>
+			<rect x="0" y="815.89" width="180" height="26" class="st1"/>
+			<text x="52" y="834.59" class="st11" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>要求修改</text>		</g>
+		<g id="shape37-106" v:mID="37" v:groupContext="shape" transform="translate(119,-402.89)">
+			<title>工作表.37</title>
+			<desc>提出者取消</desc>
+			<v:textBlock v:margins="rect(0,0,0,0)" v:tabSpace="42.5197"/>
+			<v:textRect cx="90" cy="828.89" width="180" height="26"/>
+			<rect x="0" y="815.89" width="180" height="26" class="st1"/>
+			<text x="42.5" y="834.59" class="st11" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>提出者取消</text>		</g>
+		<g id="shape38-109" v:mID="38" v:groupContext="shape" transform="translate(391,-402.89)">
+			<title>工作表.38</title>
+			<desc>拒绝</desc>
+			<v:textBlock v:margins="rect(0,0,0,0)" v:tabSpace="42.5197"/>
+			<v:textRect cx="90" cy="828.89" width="180" height="26"/>
+			<rect x="0" y="815.89" width="180" height="26" class="st1"/>
+			<text x="71" y="834.59" class="st11" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>拒绝</text>		</g>
+	</g>
+</svg>
