@@ -2,7 +2,7 @@
 
 这是西安交通大学“软件系统分析与设计”作业 2：分析并实现一个需求管理系统，再使用多智能体辅助完成实现、独立检查和受约束改进。报告从题目提出的问题展开；本仓库提供实现和便于复核的补充材料。
 
-**先读 [课程报告](report/RMS_软件系统分析与设计作业2.pdf)，运行看 [RUN.md](RUN.md)，模型看 [完整 ER](docs/design/complete-er.pdf)。**
+**先读 [课程报告](report/RMS_软件系统分析与设计作业2.pdf)，运行看 [RUN.md](RUN.md)，模型先看 [正文核心 ER](docs/design/core-er.pdf)，字段细节见 [完整 ER](docs/design/complete-er.pdf)。**
 
 ## 作业回答了什么
 
@@ -27,11 +27,13 @@ Vue 3 前端、Spring Boot 模块化单体、MySQL。版本、评审和变更应
 
 ## ER Model
 
-一张 A3 横向总图包含全部 13 实体、151 字段和 34 外键。PK、FK、UK 组和可空性直接列在表框内；原生 Visio 中实体、字段和连接线可以编辑。
+报告正文使用核心 ER 图：保留全部 13 个实体、主外键字段和关键业务字段，逐条展示主要关系。重复的人员引用以 `FK·U` 标记指向 `User.userId`，使版本、评审、变更和需求追踪更容易辨认。
 
-![需求管理系统完整逻辑 ER 图](docs/design/complete-er-preview.png)
+![需求管理系统核心 ER 图](docs/design/core-er-preview.png)
 
-[矢量 PDF](docs/design/complete-er.pdf) · [可编辑 Visio](docs/design/RMS_Presentation_Models.vsdx) · [字段与外键说明](docs/design/README.md)
+[核心 PDF](docs/design/core-er.pdf) · [核心 SVG](docs/design/core-er.svg) · [可编辑 Visio](docs/design/RMS_Presentation_Models.vsdx)
+
+完整字段级 ER 图作为补充材料保留在 [complete-er.pdf](docs/design/complete-er.pdf)、[complete-er.svg](docs/design/complete-er.svg) 和 [预览](docs/design/complete-er-preview.png) 中，仍为 A3 横向、13 实体、151 字段、34 个真实外键。两类图表达同一个模型；字段选择、符号、关系展开方式见 [设计说明](docs/design/README.md)。
 
 ## Main Workflow
 
