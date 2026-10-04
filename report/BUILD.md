@@ -1,6 +1,6 @@
 # pdfLaTeX 编译
 
-源文件为 UTF-8，使用 `ctexart`，左右 2.7 cm、上下 2.5 cm、1.25 倍行距；页眉、页脚、三线表和简洁标题参考作业 1。为使 pdfLaTeX 不依赖 Windows TrueType 字体，使用 `fontset=none`，配置 TeX Live 自带的 Arphic `gbsn/gkai` Type 1 字体族。
+源文件为 UTF-8，使用 `ctexart`，左右 2.7 cm、上下 2.5 cm、1.25 倍行距；页眉、页脚、三线表和简洁标题参考作业 1。中文标题、正文和表格统一使用宋体。为使 pdfLaTeX 不依赖 Windows TrueType 字体，使用 `fontset=none`，配置 TeX Live 自带的 Arphic `gbsn` Type 1 宋体字族。
 
 在本目录执行两遍，引用变化时再执行一遍：
 

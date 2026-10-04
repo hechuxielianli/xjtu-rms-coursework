@@ -1,12 +1,13 @@
 \documentclass[UTF8,a4paper,12pt,fontset=none]{ctexart}
-% pdfLaTeX compatibility: use the Arphic Type 1 families supplied by TeX Live.
+% 中文统一使用宋体；gbsn 是 TeX Live 提供的 pdfLaTeX 兼容宋体字族。
 \renewcommand{\CJKrmdefault}{gbsn}
 \renewcommand{\CJKsfdefault}{gbsn}
 \renewcommand{\CJKttdefault}{gbsn}
 \providecommand{\songti}{\CJKfamily{gbsn}}
-\providecommand{\heiti}{\CJKfamily{gbsn}\bfseries}
-\providecommand{\kaishu}{\CJKfamily{gkai}}
+\providecommand{\heiti}{\songti\bfseries}
+\providecommand{\kaishu}{\songti}
 \providecommand{\fangsong}{\CJKfamily{gbsn}}
+\AtBeginDocument{\songti}
 \usepackage{geometry}
 \geometry{left=2.7cm,right=2.7cm,top=2.5cm,bottom=2.5cm}
 \usepackage{setspace}
@@ -24,11 +25,11 @@
 \newcommand{\chapterbreak}{\par\bigskip}
 \pagestyle{fancy}
 \fancyhf{}
-\fancyhead[L]{软件系统分析与设计——作业2}
-\fancyhead[R]{需求管理系统分析与设计}
+\fancyhead[L]{\songti 软件系统分析与设计——作业2}
+\fancyhead[R]{\songti 需求管理系统分析与设计}
 \fancyfoot[C]{\thepage}
 \setlength{\headheight}{15pt}
-\title{\heiti\LARGE 需求管理系统的分析、建模与实现\\[0.5em]
+\title{\songti\bfseries\LARGE 需求管理系统的分析、建模与实现\\[0.5em]
 \large ——从受控需求到多智能体辅助改进}
 \author{姓名：黄展鹏\qquad 学号：2244413942\\[0.8em]专业班级：软件2404班}
 \date{2026 年 10 月 4 日}
@@ -40,7 +41,7 @@
 \vfill
 \begin{abstract}
 这次作业要求分析需求管理系统中的实体、属性和相互关系，并利用多智能体辅助完成
-实现、检查和重新设计。我首先把题目转化为十个问题：需求管理与项目管理怎样区分，
+实现、检查和重新设计。我的分析围绕几个核心问题展开：需求管理与项目管理怎样区分，
 一条需求需要保存什么，评审、版本和变更为什么必须独立，以及 AI 生成的代码怎样
 经过检查后才可以形成改进结论。围绕这些问题，我比较了直接覆盖需求与保留正式
 快照、统一状态与独立变更流程、微服务与模块化单体等方案。
@@ -98,26 +99,14 @@ A3 横向页中；实现使用 Vue 3、Spring Boot 和 MySQL。随后，我把�
 再在相同场景下观察第二版。本文中的应用 V1、V2 指两次代码实现；需求自身的正式
 版本也有版本号，两者在后文分开讨论。
 
-\subsection{本次作业准备回答的十个问题}
-后面的章节按表\ref{tab:questions}展开。前六个问题主要回答题目 2.1，后四个问题回答
-题目 2.2；实现结果服务于这些问题，而不是取代它们。
-\begin{table}[H]
-\centering\small
-\caption{从题目转化出的具体问题}\label{tab:questions}
-\begin{tabularx}{\textwidth}{C{0.9cm}Y C{1.3cm}}
-\toprule 问题 & 需要说明的内容 & 章节\\\midrule
-Q1 & 需求管理和项目管理的边界在哪里？ & 1、2\\
-Q2 & 一条需求除了描述，还需要哪些属性？ & 2\\
-Q3 & 为什么不能只建一张需求表？ & 2、3\\
-Q4 & 管理信息变化与正式内容变化怎样区分？ & 2、4\\
-Q5 & 草稿、批准、实现和验证怎样转换，批准后怎样修改？ & 4\\
-Q6 & 用户、角色、标签、评论和审计怎样与需求关联？ & 2、3\\
-Q7 & 多智能体分工怎样帮助解决设计问题？ & 5\\
-Q8 & 怎样检查第一次生成，运行成功是否等于设计正确？ & 6\\
-Q9 & 为什么要把根因变成明确约束？ & 7\\
-Q10 & 怎样在同一判断尺度下比较两版？ & 6、7\\\bottomrule
-\end{tabularx}
-\end{table}
+把题目拆开以后，我觉得后面的设计围绕几件事展开。首先要弄清需求管理到底管理什么，
+否则很容易把系统做成项目管理；接着要回答一条需求在被评审、批准和修改时，哪些
+信息必须保留下来。这些信息的归属和用途，直接决定了实体与关系。再往后，则是
+怎样把这些规则落实到状态转换和程序结构中，让模型中的约束成为实际操作的边界。
+
+题目第二部分又多了一层要求：AI 不仅要帮助实现，还要能够暴露第一版的问题，并让
+后续修改受到明确约束。因此，后面的分析分别从业务模型、系统实现和两版代码比较
+展开；实现和检查的结果用于检验前面的设计，也为进一步修改提供依据。
 
 \chapterbreak
 \section{需求管理系统的需求分析}
