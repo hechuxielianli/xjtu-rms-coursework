@@ -186,10 +186,6 @@
 			<title>R30</title>
 			<path d="M0 820.48 L48.48 841.89 L92.93 741.27 L303.32 834.2 L309.38 820.48 L309.38 820.48" class="st10"/>
 		</g>
-		<g id="shape23-174" v:mID="23" v:groupContext="shape" transform="translate(167.418,-90.4393) rotate(32.6082)">
-			<title>R33</title>
-			<path d="M0 273.56 L-10.11 280.03 L349.33 841.89 L1224.56 281.98 L1219.17 273.56 L1219.17 273.56" class="st10"/>
-		</g>
 		<g id="shape24-181" v:mID="24" v:groupContext="shape" transform="translate(898.054,-528.764) rotate(36.27)">
 			<title>R34</title>
 			<path d="M0 841.89 L0 841.89 L-60.34 759.65 L570.14 297.03 L964.73 834.79 L955.05 841.89 L955.05 841.89" class="st11"/>
@@ -1860,13 +1856,6 @@
 			<v:textRect cx="30" cy="834.89" width="60.01" height="14"/>
 			<rect x="0" y="827.89" width="60" height="14" class="st22"/>
 			<text x="10" y="838.14" class="st23" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>需求评论</text>		</g>
-		<g id="shape315-956" v:mID="315" v:groupContext="shape" transform="translate(1017,-26.89)">
-			<title>Label_R33</title>
-			<desc>操作主体</desc>
-			<v:textBlock v:margins="rect(0,0,0,0)" v:tabSpace="42.5197"/>
-			<v:textRect cx="30" cy="834.89" width="60.01" height="14"/>
-			<rect x="0" y="827.89" width="60" height="14" class="st22"/>
-			<text x="10" y="838.14" class="st23" v:langID="2052"><v:paragraph v:horizAlign="1"/><v:tabList/>操作主体</text>		</g>
 		<g id="shape316-959" v:mID="316" v:groupContext="shape" transform="translate(1040,-786.89)">
 			<title>Label_R34</title>
 			<desc>需求上下文</desc>
