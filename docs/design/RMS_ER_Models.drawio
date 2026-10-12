@@ -148,12 +148,12 @@
             <mxGeometry as="geometry" x="420" y="160" width="300" height="254" />
           </mxCell>
         </object>
-        <object id="core_field_Requirement_requirementId" label="requirementId" rmsKind="field" entity="Requirement" field="requirementId" dataType="BIGINT" key="PK/FK" nullable="false" foreignKeys="R08" tooltip="field: requirementId&#10;type: BIGINT&#10;meaning: 系统生成的内部标识&#10;key: PK/FK&#10;nullable: False&#10;default: 自增&#10;domain: &#10;write: 创建后不可变">
+        <object id="core_field_Requirement_requirementId" label="requirementId" rmsKind="field" entity="Requirement" field="requirementId" dataType="BIGINT" key="PK" nullable="false" foreignKeys="R08" tooltip="field: requirementId&#10;type: BIGINT&#10;meaning: 系统生成的内部标识&#10;key: PK&#10;nullable: False&#10;default: 自增&#10;domain: &#10;write: 创建后不可变">
           <mxCell style="shape=partialRectangle;html=0;top=0;left=0;right=0;bottom=0;fillColor=none;strokeColor=#DCDCDC;align=left;verticalAlign=middle;spacingLeft=70;spacingRight=5;whiteSpace=wrap;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;dropTarget=0;fontFamily=Arial;fontSize=14;fontColor=#303030;" parent="core_entity_Requirement" vertex="1">
             <mxGeometry as="geometry" x="0" y="44" width="300" height="21" />
           </mxCell>
         </object>
-        <mxCell id="core_field_Requirement_requirementId_key" value="PK/FK" style="shape=partialRectangle;html=0;top=0;left=0;right=0;bottom=0;fillColor=none;strokeColor=none;fontFamily=Arial;fontSize=12;fontStyle=1;fontColor=#666666;align=left;verticalAlign=middle;spacingLeft=9;overflow=hidden;rotatable=0;part=1;" parent="core_field_Requirement_requirementId" vertex="1">
+        <mxCell id="core_field_Requirement_requirementId_key" value="PK" style="shape=partialRectangle;html=0;top=0;left=0;right=0;bottom=0;fillColor=none;strokeColor=none;fontFamily=Arial;fontSize=12;fontStyle=1;fontColor=#666666;align=left;verticalAlign=middle;spacingLeft=9;overflow=hidden;rotatable=0;part=1;" parent="core_field_Requirement_requirementId" vertex="1">
           <mxGeometry as="geometry" x="0" y="0" width="65" height="21" />
         </mxCell>
         <object id="core_field_Requirement_requirementKey" label="requirementKey" rmsKind="field" entity="Requirement" field="requirementKey" dataType="VARCHAR(32)" key="U1" nullable="false" foreignKeys="" tooltip="field: requirementKey&#10;type: VARCHAR(32)&#10;meaning: 稳定且不重复的业务编号&#10;key: U1&#10;nullable: False&#10;default: 服务端生成&#10;domain: 如 REQ-001&#10;write: 创建后不可变">
