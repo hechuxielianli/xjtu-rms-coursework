@@ -78,7 +78,7 @@
 和排期不单独建模，项目、代码仓库和完整测试管理也不纳入本次实现。这样可以先把
 需求的评审、版本和变更做完整，多项目隔离与进度管理留待范围扩展时再考虑。
 
-\subsection{我怎样理解题目 2.2}
+\subsection{题目 2.2 问题分析}
 题目 2.2 要求设计多智能体协作方式，分析代码质量、缺陷和原因，再在明确限制下
 修改实现。因此，前后端生成结束以后，还要安排独立的测试和审查，记录第一版实际
 出现的问题。
@@ -230,7 +230,7 @@
 
 \chapterbreak
 \section{ER 模型设计}
-\subsection{我怎样从业务事实抽取实体}
+\subsection{从业务事实抽取实体}
 我先用需求记录保存当前内容和生命周期。旧的批准内容需要继续保留，于是另设需求
 版本；每次提交还要绑定对应的评审结果，于是再保存需求评审。这三类记录分别保留
 当前内容、已确认内容和一轮提交的内容。
@@ -274,7 +274,7 @@
 \clearpage
 \includepdf[pages=1,fitpaper=true,pagecommand={\thispagestyle{empty}\AddToShipoutPictureFG*{\AtPageLowerLeft{\raisebox{3mm}{\makebox[\paperwidth]{\thepage}}}}}]{../docs/design/core-er.pdf}
 
-\subsection{几组关键关系为什么这样设计}
+\subsection{关键关系的设计原因}
 \subsubsection{稳定需求标识与正式版本}
 需求编号持续代表同一条需求，版本号说明这是它的第几次正式内容。如果需求编号随版本
 变化，评论、关系和评审就难以聚合；只用版本号，又无法区分不同需求的 V1。我把
