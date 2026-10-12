@@ -31,9 +31,11 @@ Vue 3 前端、Spring Boot 模块化单体、MySQL。版本、评审和变更应
 
 ![需求管理系统核心 ER 图](docs/design/core-er-preview.png)
 
-[核心 PDF](docs/design/core-er.pdf) · [核心 SVG](docs/design/core-er.svg) · [可编辑 Visio](docs/design/RMS_Presentation_Models.vsdx)
+[核心 PDF](docs/design/core-er.pdf) · [核心 SVG](docs/design/core-er.svg) · [可编辑 draw.io（两页）](docs/design/RMS_ER_Models.drawio)
 
 完整字段级 ER 图作为补充材料保留在 [complete-er.pdf](docs/design/complete-er.pdf)、[complete-er.svg](docs/design/complete-er.svg) 和 [预览](docs/design/complete-er-preview.png) 中，仍为 A3 横向、13 实体、151 字段、34 个真实外键。两类图表达同一个模型；字段选择、符号、关系展开方式见 [设计说明](docs/design/README.md)。
+
+新版使用 diagrams.net（draw.io）原生实体表、字段行和连接线，统一白底、浅灰标题栏和正交布局，可在免费桌面版中手动微调。核心图的 19 条展开关系没有交叉，也没有穿过表框；完整图逐条展开所有外键，供放大核对。之前的 [Visio 文件](docs/design/RMS_Presentation_Models.vsdx) 保留为旧布局参考，当前导出以 `.drawio` 文件为准。
 
 ## Main Workflow
 

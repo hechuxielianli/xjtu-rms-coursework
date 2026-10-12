@@ -13,4 +13,6 @@ pdflatex -interaction=nonstopmode -halt-on-error -file-line-error RMS_软件系�
 
 图形从 `../docs/design/` 和 `../docs/screenshots/` 读取。正文核心 ER 页使用 `pdfpages` 保留 A3 横向矢量尺寸，其余正文为 A4。核心图保留全部实体、主外键和关键业务字段，重复的人员外键用 `FK·U` 表示；完整字段级 `complete-er.*` 仅作为仓库补充材料，不嵌入正式报告。正式 PDF 为 `RMS_软件系统分析与设计作业2.pdf`。
 
+两套 ER 图当前由 `../docs/design/RMS_ER_Models.drawio` 导出，使用免费 draw.io Desktop。手动调整模型图后，可执行设计目录的 `reexport-er.py` 同步 PDF/SVG/PNG，再按上述命令重新编译现有报告。旧 `.vsdx` 仅作参考。
+
 图 5、图 6 使用原始展示截图的矩形裁剪，去除外围和无关留白，未拼接或修改页面内容。完整原始编译日志和裁剪核对记录留在本地私人检查记录中，不公开含本机路径的日志。最终检查包括未定义引用、缺字、溢出、字体嵌入、截图像素核对和逐页渲染；字体核验命令为 `pdffonts RMS_软件系统分析与设计作业2.pdf`。

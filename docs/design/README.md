@@ -9,7 +9,23 @@
 | 核心 ER | [core-er.pdf](core-er.pdf) | [core-er.svg](core-er.svg) | [core-er-preview.png](core-er-preview.png) | 课程报告正文 |
 | 完整字段级 ER | [complete-er.pdf](complete-er.pdf) | [complete-er.svg](complete-er.svg) | [complete-er-preview.png](complete-er-preview.png) | 完整字段和约束核对 |
 
-[RMS_Presentation_Models.vsdx](RMS_Presentation_Models.vsdx) 是原生可编辑 Visio，包含 `complete-er` 与 `core-er` 两页。实体为组合表框，字段为原生文字，连接线为两端粘连的 1D 图形；可以分别编辑布局和文字。完整页及已有完整图导出文件保留原样，核心页新增。
+[RMS_ER_Models.drawio](RMS_ER_Models.drawio) 是当前原生可编辑源文件，包含“正文核心 ER”和“完整字段级 ER”两页。使用 diagrams.net（draw.io）的实体表形状，字段是独立文字行，PK/FK 标记和类型也是可编辑文字，连接线两端绑定实体。导出的两套 PDF、SVG 和 PNG 均来自此文件，不是将旧图作为图片贴入编辑器。
+
+之前的 [RMS_Presentation_Models.vsdx](RMS_Presentation_Models.vsdx) 保留为旧布局参考，不再是当前图形导出的来源。原模型、数据字典、SQL 和业务规则没有改变。
+
+## 在免费软件中微调
+
+可以使用 [draw.io Desktop 官方下载](https://github.com/jgraph/drawio-desktop/releases)，也可以在 [diagrams.net](https://app.diagrams.net/) 中打开本地文件。桌面版支持离线编辑，不需要 erwin 许可证。当前导出使用 draw.io Desktop 32.4.1。
+
+1. 在软件中用“文件 → 打开”选择 `RMS_ER_Models.drawio`，通过下方页签切换两种表达。
+2. 拖动实体的标题栏调整整个表的位置；字段行及其键标记可单独选择、双击编辑。
+3. 选中关系线后拖动折点调整走线；两端仍连接实体边框。修改连线时保留原基数符号。
+4. 保存 `.drawio` 后，分别选择对应页导出 PDF、SVG 或 PNG。SVG 已附带模型副本，也可以回到软件中打开；主要编辑文件仍为 `.drawio`。
+5. 若要同步更新仓库的六份导出，可用 [reexport-er.py](reexport-er.py)。脚本读取手动编辑后的源文件，不会重新生成或覆盖布局；PDF 统一为 A3 横向矢量页。
+
+图形文件负责表达和排版。字段含义及约束以 [数据字典](data-dictionary.csv)、[外键表](foreign-keys.csv) 和 [数据库迁移](../../backend/src/main/resources/db/migration/V1__rms_baseline_1_3.sql) 为核对依据；手动微调位置和文字样式不需要改动后端。
+
+批量导出需要 Python 3.9+ 和 `pypdf`：先执行 `python -m pip install pypdf`，再在本目录运行 `python reexport-er.py --drawio "你的 draw.io 可执行文件路径"`。脚本在临时目录完成全部导出后才替换仓库文件，并检查两页的实体、字段和关系数量。软件的普通保存和压缩 XML 都可读取。
 
 ## 核心图怎样选择字段
 
@@ -46,6 +62,8 @@
 PK 表示主键，FK 表示外键，`?` 表示可空。Crow’s Foot 两端的圆圈、短线、三叉分别表示 0、1、多个；实线表示标识关系，虚线表示非标识关系。完整图中的 UK 编号表示**同一实体内的一组唯一键**，相同编号的多列共同唯一；G 表示数据库生成的约束字段。两张图都使用原始字段名，没有用重复引用框扩充实体数。
 
 布局采用用户与权限在左、需求居中、版本/评审/变更在右、辅助协作在下、审计在外围。白底、深灰边框、浅灰标题栏以及正交连线让读者先辨认业务结构，再按需查阅详细约束。
+
+新版核心图的 19 条展开关系没有交叉，全部连线均不穿过实体内部；源需求与目标需求、版本归属与当前版本指针仍分别表达。完整图因逐条展开人员外键而保留较多走线，但每条线均为正交线，不穿过实体框。图形调整没有删除字段、改变唯一键组或把逻辑审计目标变成外键。
 
 ## 完整设计资料
 
